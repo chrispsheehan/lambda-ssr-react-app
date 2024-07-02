@@ -3,6 +3,7 @@ import {StaticRouter} from 'react-router-dom/server';
 import ReactDOMServer from 'react-dom/server';
 import App from '../client/components/App';
 import fs from 'fs';
+import awsServerlessExpress from 'aws-serverless-express';
 
 const app = express();
 app.use('/static', express.static(__dirname)); //s3 here
@@ -13,10 +14,6 @@ app.get('*', async (req, res) => {
     res.status(200).send(indexHtml);
 });
 
-app.listen(PORT, () => {
-  console.log(`Server started on port ${PORT}`);
-});
-
 /**
  * Produces the initial non-interactive HTML output of React
  * components. The hydrateRoot method is called on the client
@@ -25,13 +22,26 @@ app.listen(PORT, () => {
  * @return {string}
  */
 const createReactApp = async (location) => {
-    const reactApp = ReactDOMServer.renderToString(
-      <StaticRouter location={location}>
-        <App />
-      </StaticRouter>
-    );
-    const html = await fs.promises.readFile(`${__dirname}/index.html`, 'utf-8');
-    const reactHtml = html.replace(
-      '<div id="root"></div>', `<div id="root">${reactApp}</div>`);
-    return reactHtml;
-  };
+  const reactApp = ReactDOMServer.renderToString(
+    <StaticRouter location={location}>
+      <App />
+    </StaticRouter>
+  );
+  const html = await fs.promises.readFile(`${__dirname}/index.html`, 'utf-8');
+  const reactHtml = html.replace(
+    '<div id="root"></div>', `<div id="root">${reactApp}</div>`);
+  return reactHtml;
+};
+
+const server = awsServerlessExpress.createServer(app);
+
+exports.handler = (event, context) => {
+    awsServerlessExpress.proxy(server, event, context);
+};
+
+// For local testing
+if (process.env.NODE_ENV !== 'lambda') {
+  app.listen(PORT, () => {
+      console.log(`Server started on port ${PORT}`);
+  });
+}

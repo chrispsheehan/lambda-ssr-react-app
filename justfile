@@ -21,4 +21,9 @@ deploy:
     cd tf
     terraform apply -var lambda-zip-path=$build_file_path --replace aws_lambda_function.render
 
+destroy:
+    #!/usr/bin/env bash
+    cd tf
+    terraform destroy -var lambda-zip-path=/a.zip
+
 

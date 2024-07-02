@@ -11,7 +11,7 @@ resource "aws_s3_object" "ssr_code_zip" {
 
 resource "aws_lambda_function" "render" {
   function_name = local.ssr_reference
-  handler       = "lambda-ssr-react-app/server.handler"
+  handler       = "server.handler"
   runtime       = "nodejs20.x"
   role          = aws_iam_role.lambda_execution_role.arn
 
