@@ -1,6 +1,7 @@
 const path = require('path');
 const webpack = require('webpack');
 const htmlWebpackPlugin = require('html-webpack-plugin');
+const CopyWebpackPlugin = require('copy-webpack-plugin');
 
 /**
  * Load JS and JSX files through Babel
@@ -37,6 +38,11 @@ const serverConfig = {
   plugins: [
     new webpack.EnvironmentPlugin({
       PORT: 3001
+    }),
+    new CopyWebpackPlugin({
+      patterns: [
+        { from: 'src/client/index.html', to: 'index.html' }
+      ]
     })
   ],
   resolve
