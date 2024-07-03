@@ -1,6 +1,24 @@
 resource "aws_s3_bucket" "ssr_code_bucket" {
-  bucket = local.ssr_reference
+  bucket = "${local.ssr_reference}-ssr-code"
 }
+
+resource "aws_s3_bucket" "static_files_bucket" {
+  bucket = "${local.ssr_reference}-ssr-static"
+}
+
+resource "aws_s3_bucket_public_access_block" "static_files_bucket_public_access" {
+  bucket = aws_s3_bucket.static_files_bucket.id
+
+  block_public_acls   = false
+  block_public_policy = false
+}
+
+resource "aws_s3_bucket_policy" "static_files_bucket_policy" {
+  bucket = aws_s3_bucket.static_files_bucket.id
+
+  policy = data.aws_iam_policy_document.s3_allow_public_access.json
+}
+
 
 resource "aws_s3_object" "ssr_code_zip" {
   bucket        = aws_s3_bucket.ssr_code_bucket.id
@@ -11,7 +29,7 @@ resource "aws_s3_object" "ssr_code_zip" {
 
 resource "aws_lambda_function" "render" {
   function_name = local.ssr_reference
-  handler       = "server.handler"
+  handler       = "dist/server.handler"
   runtime       = "nodejs20.x"
   role          = aws_iam_role.lambda_execution_role.arn
 
