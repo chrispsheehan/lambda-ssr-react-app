@@ -26,42 +26,38 @@ const resolve = {
 };
 
 const serverConfig = {
-    target: 'node',
-    mode: 'development',
-    entry: './src/server/server.jsx',
-    output: {
-      path: path.join(__dirname, '/dist'),
-      filename: 'server.cjs',
-    },
-    module: babelLoader,
-    plugins: [
-      new webpack.EnvironmentPlugin({
-        PORT: 3001
-      })
-    ],
-    resolve
+  target: 'node',
+  mode: 'development',
+  entry: './src/server/server.jsx',
+  output: {
+    path: path.join(__dirname, 'dist'),
+    filename: 'server.cjs',
+  },
+  module: babelLoader,
+  plugins: [
+    new webpack.EnvironmentPlugin({
+      PORT: 3001
+    })
+  ],
+  resolve
 };
 
-  const clientConfig = {
-    target: 'web',
-    mode: 'development',
-    entry: './src/client/index.jsx',
-    output: {
-      path: path.join(__dirname, '/dist'),
-       /*
-        * Appends /static to index.html when looking for client.js
-        * This is where Express is serving static files from
-        */
-      publicPath: '/static',
-      filename: 'client.js',
-    },
-    module: babelLoader,
-    plugins: [
-      new htmlWebpackPlugin({
-        template: `${__dirname}/src/client/index.html`
-      }),
-    ],
-    resolve
+const clientConfig = {
+  target: 'web',
+  mode: 'development',
+  entry: './src/client/index.jsx',
+  output: {
+    path: path.join(__dirname, 'public/static'),
+    publicPath: '/static',
+    filename: 'client.js',
+  },
+  module: babelLoader,
+  plugins: [
+    new htmlWebpackPlugin({
+      template: `${__dirname}/src/client/index.html`
+    }),
+  ],
+  resolve
 };
 
 module.exports = [serverConfig, clientConfig];
