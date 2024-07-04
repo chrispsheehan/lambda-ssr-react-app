@@ -1,17 +1,16 @@
 import express from 'express';
-import onFinished from 'on-finished';
 import { StaticRouter } from 'react-router-dom/server';
 import ReactDOMServer from 'react-dom/server';
 import App from '../client/components/App';
 import fs from 'fs';
-import path, { basename } from 'path';
+import path from 'path';
 import awsServerlessExpress from 'aws-serverless-express';
 
 const PORT = process.env.PORT || 3001;
 const stage = 'dev';  // Assuming your stage name is 'dev'
 
 const app = express();
-const staticDir = path.resolve(__dirname, '../dist/public/static');
+const staticDir = path.resolve(__dirname, process.env.STATIC_DIR || '../dist/public/static');
 app.use(`/static`, express.static(staticDir));
 app.use(`/${stage}/static`, express.static(staticDir));
 
@@ -35,6 +34,8 @@ app.get(`/${stage}/debug-static-files`, (req, res) => {
     res.json(files);
   });
 });
+
+
 
 app.get(`/${stage}/*`, async (req, res) => {
   try {
