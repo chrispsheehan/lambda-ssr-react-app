@@ -23,7 +23,7 @@ resource "aws_lambda_function" "render" {
   environment {
     variables = {
       NODE_ENV = "production",
-      REACT_APP_BASENAME = "/${var.environment}"
+      STATIC_DIR = "/var/task/dist/public/static"
     }
   }
 }
@@ -80,4 +80,3 @@ resource "aws_apigatewayv2_route" "default_route" {
   route_key = "$default"
   target    = "integrations/${aws_apigatewayv2_integration.this.id}"
 }
-
