@@ -13,6 +13,14 @@ const app = express();
 const staticDir = path.resolve(__dirname, process.env.STATIC_DIR || '../dist/public/static');
 app.use(`/static`, express.static(staticDir));
 
+// Middleware to redirect /dev to /dev/
+app.use((req, res, next) => {
+  if (req.path === `/${stage}`) {
+    return res.redirect(301, `/${stage}/`);
+  }
+  next();
+});
+
 app.get(`/${stage}/*`, async (req, res) => {
   try {
     console.log(`${req.method}: ${req.url}`);
