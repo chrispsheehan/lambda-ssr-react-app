@@ -7,50 +7,17 @@ import path from 'path';
 import awsServerlessExpress from 'aws-serverless-express';
 
 const PORT = process.env.PORT || 3001;
-const stage = 'dev';  // Assuming your stage name is 'dev'
+const stage = process.env.STAGE || 'dev';
 
 const app = express();
 const staticDir = path.resolve(__dirname, process.env.STATIC_DIR || '../dist/public/static');
 app.use(`/static`, express.static(staticDir));
-app.use(`/${stage}/static`, express.static(staticDir));
-
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
-app.use((req, res, next) => { 
-  console.log(`Params: ${JSON.stringify(req.params)}`); // log out requests
-  console.log(`Headers: ${JSON.stringify(req.headers)}`);
-  console.log(`${req.method}: ${JSON.stringify(req.url)}`);
-  next();
-});
-
-// Endpoint to list static files for debugging
-app.get(`/${stage}/debug-static-files`, (req, res) => {
-  fs.readdir(staticDir, (err, files) => {
-    if (err) {
-      console.error('Error reading static files directory:', err);
-      return res.status(500).send('Error reading static files directory');
-    }
-    console.log('Static files:', files);
-    res.json(files);
-  });
-});
-
-
 
 app.get(`/${stage}/*`, async (req, res) => {
   try {
-    fs.readdir(staticDir, (err, files) => {
-      if (err) {
-        console.error('Error reading static files directory:', err);
-        return res.status(500).send('Error reading static files directory');
-      }
-      console.log('Static files:', files);
-      // res.json(files);
-    });
-
-    console.log('Request received:', req.url);
+    console.log(`${req.method}: ${req.url}`);
     const indexHtml = await createReactApp(req.url);
-    res.setHeader('Content-Type', 'text/html; charset=utf-8'); // Set the Content-Type header
+    res.setHeader('Content-Type', 'text/html; charset=utf-8');
     res.status(200).send(indexHtml);
   } catch (error) {
     console.error('Error rendering app:', error);
@@ -60,7 +27,7 @@ app.get(`/${stage}/*`, async (req, res) => {
 
 // Fallback route for any other routes not explicitly handled
 app.all('*', (req, res) => {
-  console.log(`***ROUTE NOT SUPPORTED*** Method: ${req.method}, URL: ${req.url}`);
+  console.log(`***ROUTE NOT SUPPORTED*** ${req.method}: ${req.url}`);
   res.status(404).send('Route not supported');
 });
 

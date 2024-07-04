@@ -23,7 +23,8 @@ resource "aws_lambda_function" "render" {
   environment {
     variables = {
       NODE_ENV = "production",
-      STATIC_DIR = "/var/task/dist/public/static"
+      STATIC_DIR = "/var/task/dist/public/static",
+      STAGE = var.environment
     }
   }
 }
