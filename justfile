@@ -11,7 +11,8 @@ build build_file_path:
     rm -f {{build_file_path}}
     npm i
     npm run build
-    zip -r {{build_file_path}} dist public/static node_modules
+    # zip -r {{build_file_path}} dist public/static node_modules
+    zip -r {{build_file_path}} dist node_modules
 
 deploy:
     #!/usr/bin/env bash

@@ -11,7 +11,7 @@ const PORT = process.env.PORT || 3001;
 const stage = 'dev';  // Assuming your stage name is 'dev'
 
 const app = express();
-const staticDir = path.resolve(__dirname, '/Users/chrissheehan/git/chrispsheehan/lambda-ssr-react-app/dist/public/static');
+const staticDir = path.resolve(__dirname, '../dist/public/static');
 app.use(`/static`, express.static(staticDir));
 app.use(`/${stage}/static`, express.static(staticDir));
 
