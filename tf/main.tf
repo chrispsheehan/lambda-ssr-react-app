@@ -1,25 +1,6 @@
 resource "aws_s3_bucket" "ssr_code_bucket" {
   bucket = "${local.ssr_reference}-ssr-code"
 }
-
-resource "aws_s3_bucket" "static_files_bucket" {
-  bucket = "${local.ssr_reference}-ssr-static"
-}
-
-resource "aws_s3_bucket_public_access_block" "static_files_bucket_public_access" {
-  bucket = aws_s3_bucket.static_files_bucket.id
-
-  block_public_acls   = false
-  block_public_policy = false
-}
-
-resource "aws_s3_bucket_policy" "static_files_bucket_policy" {
-  bucket = aws_s3_bucket.static_files_bucket.id
-
-  policy = data.aws_iam_policy_document.s3_allow_public_access.json
-}
-
-
 resource "aws_s3_object" "ssr_code_zip" {
   bucket        = aws_s3_bucket.ssr_code_bucket.id
   key           = basename(var.lambda-zip-path)
@@ -41,7 +22,8 @@ resource "aws_lambda_function" "render" {
 
   environment {
     variables = {
-      NODE_ENV = "production"
+      NODE_ENV = "production",
+      REACT_APP_BASENAME = "/${var.environment}"
     }
   }
 }
