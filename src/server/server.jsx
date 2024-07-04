@@ -5,13 +5,26 @@ import App from '../client/components/App';
 import fs from 'fs';
 import awsServerlessExpress from 'aws-serverless-express';
 
+const PORT = process.env.PORT || 3001;
+const basename = process.env.REACT_APP_BASENAME || '/';
+
 const app = express();
-app.use('/static', express.static(__dirname)); //s3 here
-const PORT = process.env.PORT;
+app.use(`/static`, express.static(__dirname));
 
 app.get('*', async (req, res) => {
-    const indexHtml = await createReactApp(req.url);
-    res.status(200).send(indexHtml);
+    // const indexHtml = await createReactApp(req.url);
+    // res.setHeader('Content-Type', 'text/html; charset=utf-8');
+    // res.status(200).send(indexHtml);
+
+    try {
+      console.log('Request received:', req.url);
+      const indexHtml = await createReactApp(req.url);
+      res.setHeader('Content-Type', 'text/html; charset=utf-8'); // Set the Content-Type header
+      res.status(200).send(indexHtml);
+    } catch (error) {
+      console.error('Error rendering app:', error);
+      res.status(500).send('An error occurred');
+    }
 });
 
 /**
