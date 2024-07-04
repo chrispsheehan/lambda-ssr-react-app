@@ -53,8 +53,8 @@ const clientConfig = {
   mode: 'development',
   entry: './src/client/index.jsx',
   output: {
-    path: path.join(__dirname, 'public/static'),
-    publicPath: '/static',
+    path: path.join(__dirname, 'dist/public/static'),
+    publicPath: '/static/',
     filename: 'client.js',
   },
   module: babelLoader,

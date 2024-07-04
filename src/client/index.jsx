@@ -5,7 +5,7 @@ import App from './components/App';
 
 hydrateRoot(document.getElementById('root'),
   <React.StrictMode>
-    <BrowserRouter>
+    <BrowserRouter basename='/dev'>
       <App />
     </BrowserRouter>
   </React.StrictMode>);
