@@ -3,13 +3,15 @@ import {StaticRouter} from 'react-router-dom/server';
 import ReactDOMServer from 'react-dom/server';
 import App from '../client/components/App';
 import fs from 'fs';
+import path from 'path';
 import awsServerlessExpress from 'aws-serverless-express';
 
 const PORT = process.env.PORT || 3001;
-const basename = process.env.REACT_APP_BASENAME || '/';
 
 const app = express();
 app.use(`/static`, express.static(__dirname));
+
+
 
 app.get('*', async (req, res) => {
     // const indexHtml = await createReactApp(req.url);
@@ -17,6 +19,16 @@ app.get('*', async (req, res) => {
     // res.status(200).send(indexHtml);
 
     try {
+      const staticDir = path.resolve(__dirname);
+
+      fs.readdir(staticDir, (err, files) => {
+        if (err) {
+          return res.status(500).send('Error reading static files directory');
+        }
+      
+        console.log("files:" + files);
+      });
+
       console.log('Request received:', req.url);
       const indexHtml = await createReactApp(req.url);
       res.setHeader('Content-Type', 'text/html; charset=utf-8'); // Set the Content-Type header
