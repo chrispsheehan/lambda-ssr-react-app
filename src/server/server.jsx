@@ -1,4 +1,5 @@
 import express from 'express';
+import onFinished from 'on-finished';
 import {StaticRouter} from 'react-router-dom/server';
 import ReactDOMServer from 'react-dom/server';
 import App from '../client/components/App';
@@ -11,7 +12,21 @@ const PORT = process.env.PORT || 3001;
 const app = express();
 app.use(`/static`, express.static(__dirname));
 
-
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+app.use((req, res, next) => { 
+  console.log(`Params: ${JSON.stringify(req.params)}`); // log out requests
+  console.log(`Headers: ${JSON.stringify(req.headers)}`);
+  console.log(`${req.method}: ${JSON.stringify(req.url)}`);
+  onFinished(res, function () {
+    // log out invalid requests
+    app.all('/*', function(req, res) {
+      console.error(`***ROUTE NOT SUPPORTED***\n`);
+      res.status(404).json({message: "invalidRoute"})
+    });
+  })
+  next();
+})
 
 app.get('*', async (req, res) => {
     // const indexHtml = await createReactApp(req.url);
