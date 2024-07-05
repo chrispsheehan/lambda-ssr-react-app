@@ -5,6 +5,9 @@ import App from '../client/components/App';
 import fs from 'fs';
 import path from 'path';
 import awsServerlessExpress from 'aws-serverless-express';
+import { Location } from 'react-router-dom';
+import React from 'react';
+import { APIGatewayProxyEvent, Context } from 'aws-lambda';
 
 const PORT = process.env.PORT || 3001;
 const stage = process.env.STAGE || 'dev';
@@ -12,14 +15,6 @@ const stage = process.env.STAGE || 'dev';
 const app = express();
 const staticDir = path.resolve(__dirname, process.env.STATIC_DIR || '../dist/public/static');
 app.use(`/static`, express.static(staticDir));
-
-// // Middleware to redirect /dev to /dev/
-// app.use((req, res, next) => {
-//   if (req.path === `/${stage}`) {
-//     return res.redirect(301, `/${stage}/`);
-//   }
-//   next();
-// });
 
 app.get(`/${stage}/*`, async (req, res) => {
   try {
@@ -46,7 +41,7 @@ app.all('*', (req, res) => {
  * @param {string} location
  * @return {string}
  */
-const createReactApp = async (location) => {
+const createReactApp = async (location: string | Partial<Location<any>>) => {
   const reactApp = ReactDOMServer.renderToString(
     <StaticRouter location={location} basename={`/${stage}`}>
       <App />
@@ -60,7 +55,7 @@ const createReactApp = async (location) => {
 
 const server = awsServerlessExpress.createServer(app);
 
-exports.handler = (event, context) => {
+exports.handler = (event: APIGatewayProxyEvent, context: Context) => {
   awsServerlessExpress.proxy(server, event, context);
 };
 

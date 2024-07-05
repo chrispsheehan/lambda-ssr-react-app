@@ -4,18 +4,21 @@ const htmlWebpackPlugin = require('html-webpack-plugin');
 const CopyWebpackPlugin = require('copy-webpack-plugin');
 
 /**
- * Load JS and JSX files through Babel
+ * Load JS, JSX, TS, and TSX files through Babel and TS Loader
  */
 const babelLoader = {
   rules: [
     {
-      test: /.(js|jsx)$/,
+      test: /\.(js|jsx|ts|tsx)$/,
       exclude: /node_modules/,
       use: {
         loader: 'babel-loader',
         options: {
-          presets: ['@babel/preset-env',
-            ['@babel/preset-react', {'runtime': 'automatic'}]]
+          presets: [
+            '@babel/preset-env',
+            ['@babel/preset-react', { 'runtime': 'automatic' }],
+            '@babel/preset-typescript'
+          ]
         }
       }
     }
@@ -23,13 +26,13 @@ const babelLoader = {
 };
 
 const resolve = {
-  extensions: ['.js', '.jsx']
+  extensions: ['.js', '.jsx', '.ts', '.tsx']
 };
 
 const serverConfig = {
   target: 'node',
   mode: 'development',
-  entry: './src/server/server.jsx',
+  entry: './src/server/server.tsx',
   output: {
     path: path.join(__dirname, 'dist'),
     filename: 'server.cjs',
@@ -51,7 +54,7 @@ const serverConfig = {
 const clientConfig = {
   target: 'web',
   mode: 'development',
-  entry: './src/client/index.jsx',
+  entry: './src/client/index.tsx',
   output: {
     path: path.join(__dirname, 'dist/public/static'),
     publicPath: '/static/',

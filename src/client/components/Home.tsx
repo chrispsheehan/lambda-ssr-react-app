@@ -1,4 +1,6 @@
-const Home = () => {
+import React from 'react';
+
+const Home: React.FC = () => {
     return (
       <section>
         <h1>This is the home page</h1>
