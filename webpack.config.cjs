@@ -3,6 +3,12 @@ const webpack = require('webpack');
 const htmlWebpackPlugin = require('html-webpack-plugin');
 const CopyWebpackPlugin = require('copy-webpack-plugin');
 
+const watchOptions = {
+  aggregateTimeout: 300, // Delay before rebuilding (in ms)
+  poll: 1000, // Check for changes every second
+  ignored: /node_modules/, // Ignore changes in node_modules
+};
+
 /**
  * Load JS, JSX, TS, and TSX files through Babel and TS Loader
  */
@@ -48,7 +54,8 @@ const serverConfig = {
       ]
     })
   ],
-  resolve
+  resolve,
+  watchOptions,
 };
 
 const clientConfig = {
@@ -66,7 +73,8 @@ const clientConfig = {
       template: `${__dirname}/src/client/index.html`
     }),
   ],
-  resolve
+  resolve,
+  watchOptions,
 };
 
 module.exports = [serverConfig, clientConfig];
