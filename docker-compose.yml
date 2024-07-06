@@ -1,0 +1,39 @@
+services:
+  ssr-web:
+    image: node:alpine
+    healthcheck:
+      test: ["CMD-SHELL", "wget --quiet --spider --tries=1 http://localhost:3001/dev/ || exit 1"]
+      interval: 10s
+      timeout: 2s
+      retries: 3
+      start_period: 15s
+    container_name: ssr-web
+    volumes:
+      - ./src/:/app/src
+      - ./package.json:/app/package.json
+      - ./tsconfig.json:/app/tsconfig.json
+      - ./webpack.config.cjs:/app/webpack.config.cjs
+    working_dir: /app
+    command: ["/bin/sh", "-c", "npm install && npm run build && npm run start:dev"]
+    ports:
+      - 3001:3001
+
+  ssr-test:
+    depends_on:
+      ssr-web:
+        condition: service_healthy
+    image: mcr.microsoft.com/playwright
+    environment: 
+      - BASE_URL=http://ssr-web:3001
+    container_name: ssr-test
+    volumes:
+      - ./tests:/app/tests
+      - ./playwright.config.ts:/app/playwright.config.ts
+      - ./src/:/app/watch/src
+      - ./tests/:/app/watch/tests
+    working_dir: /app
+    command: >
+      /bin/sh -c "
+      npm i @playwright/test &&
+      npx playwright install-deps &&
+      npx nodemon --watch /app/watch --ext ts,tsx,html --exec 'npx playwright test'"

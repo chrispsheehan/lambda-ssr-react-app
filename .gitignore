@@ -1,4 +1,6 @@
 node_modules
+playwright-report
+test-results
 dist
 public
 build
@@ -8,5 +10,6 @@ build
 
 /tf/.terraform/
 tf/.terraform.lock.hcl
+
 *.zip
 *.DS_Store

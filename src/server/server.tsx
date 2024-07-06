@@ -9,7 +9,7 @@ import { Location } from 'react-router-dom';
 import React from 'react';
 import { APIGatewayProxyEvent, Context } from 'aws-lambda';
 
-const PORT = process.env.PORT || 3001;
+const PORT = process.env.PORT;
 const stage = process.env.STAGE || 'dev';
 
 const app = express();
