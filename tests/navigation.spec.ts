@@ -1,15 +1,17 @@
 import { test, expect } from '@playwright/test';
 
+const stage = process.env.STAGE;
+
 const urls = [{
-  url: "dev/",
+  url: `${stage}/`,
   title: "This is the home page"
 },
 {
-  url: "dev/about",
+  url: `${stage}/about`,
   title: "About Page"
 },
 {
-  url: "dev/home",
+  url: `${stage}/home`,
   title: "This is the home page"
 }];
 

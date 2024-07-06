@@ -10,7 +10,7 @@ import React from 'react';
 import { APIGatewayProxyEvent, Context } from 'aws-lambda';
 
 const PORT = process.env.PORT;
-const stage = process.env.STAGE || 'dev';
+const stage = process.env.STAGE;
 
 const app = express();
 const staticDir = path.resolve(__dirname, process.env.STATIC_DIR || '../dist/public/static');

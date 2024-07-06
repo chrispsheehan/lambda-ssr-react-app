@@ -1,6 +1,8 @@
 services:
   ssr-web:
     image: node:alpine
+    environment: 
+      - STAGE=dev
     healthcheck:
       test: ["CMD-SHELL", "wget --quiet --spider --tries=1 http://localhost:3001/dev/ || exit 1"]
       interval: 10s
@@ -25,6 +27,7 @@ services:
     image: mcr.microsoft.com/playwright
     environment: 
       - BASE_URL=http://ssr-web:3001
+      - STAGE=dev
     container_name: ssr-test
     volumes:
       - ./tests:/app/tests

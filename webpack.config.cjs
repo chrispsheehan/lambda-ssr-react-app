@@ -46,7 +46,8 @@ const serverConfig = {
   module: babelLoader,
   plugins: [
     new webpack.EnvironmentPlugin({
-      PORT: 3001
+      PORT: 3001,
+      STAGE: 'dev'
     }),
     new CopyWebpackPlugin({
       patterns: [
