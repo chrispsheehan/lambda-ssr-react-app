@@ -20,14 +20,12 @@ deploy:
     just build $build_file_path
     cd tf
     terraform init
-    terraform apply -var lambda-zip-path=$build_file_path --replace aws_lambda_function.render
-    # S3_STATIC_BUCKET_NAME=$(terraform output -raw s3_static_bucket)
-    # aws s3 sync {{justfile_directory()}}/public s3://$S3_STATIC_BUCKET_NAME/public --delete
+    terraform apply -auto-approve -var lambda-zip-path=$build_file_path --replace aws_lambda_function.render
 
 destroy:
     #!/usr/bin/env bash
     cd tf
-    terraform destroy -var lambda-zip-path=/a.zip
+    terraform destroy -auto-approve -var lambda-zip-path=/a.zip
 
 check:
     #!/usr/bin/env bash
