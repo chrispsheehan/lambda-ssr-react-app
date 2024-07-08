@@ -1,10 +1,11 @@
 services:
   ssr-web:
     image: node:alpine
-    environment: 
+    environment:
+      - PORT=3001
       - STAGE=local
     healthcheck:
-      test: ["CMD-SHELL", "wget --quiet --spider --tries=1 http://localhost:3001/local/ || exit 1"]
+      test: ["CMD-SHELL", "wget --quiet --spider --tries=1 http://localhost:3001/local/home || exit 1"]
       interval: 10s
       timeout: 2s
       retries: 3
