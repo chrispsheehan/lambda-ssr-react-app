@@ -1,7 +1,10 @@
 const path = require('path');
 const webpack = require('webpack');
+const dotenv = require('dotenv');
 const htmlWebpackPlugin = require('html-webpack-plugin');
 const CopyWebpackPlugin = require('copy-webpack-plugin');
+
+dotenv.config();
 
 const watchOptions = {
   aggregateTimeout: 300, // Delay before rebuilding (in ms)
@@ -45,15 +48,16 @@ const serverConfig = {
   },
   module: babelLoader,
   plugins: [
-    new webpack.EnvironmentPlugin({
-      PORT: 3001,
-      STAGE: 'dev'
-    }),
     new CopyWebpackPlugin({
       patterns: [
         { from: 'src/client/index.html', to: 'index.html' }
       ]
-    })
+    }),
+    new webpack.DefinePlugin({
+      'process.env.PORT': JSON.stringify(process.env.PORT),
+      'process.env.STAGE': JSON.stringify(process.env.STAGE),
+      'process.env.STATIC_DIR': JSON.stringify(process.env.STATIC_DIR),
+    }),
   ],
   ignoreWarnings: [/Critical dependency: the request of a dependency is an expression/],
   resolve,
@@ -73,6 +77,9 @@ const clientConfig = {
   plugins: [
     new htmlWebpackPlugin({
       template: `${__dirname}/src/client/index.html`
+    }),
+    new webpack.DefinePlugin({
+      'process.env.STAGE': JSON.stringify(process.env.STAGE),
     }),
   ],
   resolve,
