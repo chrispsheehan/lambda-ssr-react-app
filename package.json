@@ -27,7 +27,6 @@
     "build": "npm run clean && webpack --config webpack.config.cjs",
     "build:dev": "webpack --watch --stats-error-details",
     "start:dev": "concurrently \"npm run build:dev\" \"nodemon --watch ./dist --exec 'node ./dist/server.cjs'\"",
-    "start": "npm run build && node ./dist/server.cjs",
     "test": "npx playwright test"
   },
   "devDependencies": {
