@@ -25,6 +25,7 @@ deploy:
 destroy:
     #!/usr/bin/env bash
     cd tf
+    terraform init
     terraform destroy -auto-approve -var lambda-zip-path=/a.zip
 
 check:
