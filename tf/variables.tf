@@ -13,3 +13,9 @@ variable "environment" {
 variable "lambda-zip-path" {
   type = string
 }
+
+variable "base_reference" {
+  type        = string
+  description = "base all other resource descriptions from this"
+  default     = "lambda-ssr-react"
+}

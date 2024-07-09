@@ -19,9 +19,3 @@ terraform {
 provider "aws" {
   region = var.region
 }
-
-provider "aws" {
-  alias  = "acm_cert_region"
-  region = local.acm_cert_region
-}
-

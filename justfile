@@ -10,8 +10,8 @@ build build_file_path:
     #!/usr/bin/env bash
     rm -f {{build_file_path}}
     npm i
+    export STAGE=dev
     npm run build
-    # zip -r {{build_file_path}} dist public/static node_modules
     zip -r {{build_file_path}} dist node_modules
 
 deploy:
@@ -33,5 +33,14 @@ check:
     cd tf
     terraform validate
 
+format:
+    #!/usr/bin/env bash
+    cd tf
+    terraform fmt --recursive
 
 
+plan:
+    #!/usr/bin/env bash
+    cd tf
+    terraform init
+    terraform plan -var lambda-zip-path=/a.zip

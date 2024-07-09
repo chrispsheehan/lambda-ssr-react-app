@@ -1,3 +1,7 @@
 output "web_url" {
-  value = "${aws_apigatewayv2_stage.this[0].invoke_url}/home"
+  value = module.ssr.web_url
+}
+
+output "static_files_bucket" {
+  value = module.static.static_files_bucket
 }
