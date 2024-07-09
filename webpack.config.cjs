@@ -69,7 +69,7 @@ const clientConfig = {
   mode: 'development',
   entry: './src/client/index.tsx',
   output: {
-    path: path.join(__dirname, 'dist/public/static'),
+    path: path.join(__dirname, 'public/static'),
     publicPath: '/static/',
     filename: 'client.js',
   },

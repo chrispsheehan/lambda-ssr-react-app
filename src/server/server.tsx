@@ -13,7 +13,7 @@ const PORT = process.env.PORT;
 const stage = process.env.STAGE;
 
 const app = express();
-const staticDir = path.resolve(__dirname, process.env.STATIC_DIR || '../dist/public/static');
+const staticDir = path.resolve(__dirname, '../public/static');
 app.use(`/static`, express.static(staticDir));
 
 app.get(`/${stage}/*`, async (req, res) => {
