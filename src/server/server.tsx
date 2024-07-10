@@ -1,21 +1,28 @@
 import { config } from "dotenv";
 config();
 
-import express from 'express';
+import express, { NextFunction } from 'express';
 import { StaticRouter } from 'react-router-dom/server';
 import ReactDOMServer from 'react-dom/server';
 import App from '../client/components/App';
 import fs from 'fs';
 import path from 'path';
-import awsServerlessExpress from 'aws-serverless-express';
 import { Location } from 'react-router-dom';
 import React from 'react';
-import { APIGatewayProxyEvent, Context } from 'aws-lambda';
+import axios from "axios";
 
-const port = process.env.PORT;
-const stage = process.env.STAGE;
-const appEnv = process.env.APP_ENV;
-const staticSource = process.env.STATIC_SOURCE;
+const getEnvVar = (varName: string): string => {
+  const value = process.env[varName];
+  if (!value) {
+    throw new Error(`Environment variable ${varName} is required but not defined`);
+  }
+  return value;
+}
+
+const port: string | undefined = process.env.PORT;
+const stage: string = getEnvVar('STAGE');
+const appEnv: string = getEnvVar('APP_ENV');
+const staticSource: string = getEnvVar('STATIC_SOURCE');
 
 var staticDir: string;
 
@@ -25,18 +32,44 @@ console.log(`STAGE: ${stage}`);
 console.log(`APP_ENV: ${appEnv}`);
 console.log(`STATIC_SOURCE: ${staticSource}`);
 
-const isLocal = (appEnv == 'local' || appEnv == 'docker')
+app.use((req, res, next) => {
+  console.log(`Request received: ${req.method} ${req.url}`);
+  next();
+});
 
+switch (appEnv) {
+  case 'local':
+  case 'docker':
+    const staticDirLocal = path.resolve(__dirname, staticSource);
+    staticDir = staticDirLocal;
+    app.use('/static', express.static(staticDirLocal));
+    break;
 
-if (isLocal) {
-  staticDir = path.resolve(__dirname, `${staticSource}`);
-  console.log(`loading /static to ${staticDir}`);
-  app.use(`/static`, express.static(staticDir));
-} else {
-  throw new Error('Invalid APP_ENV value');
+  case 'production':
+    app.use('/static', async (req, res, next: NextFunction) => {
+      try {
+        const fileKey = req.path.substring(1);
+        const url = `${staticSource}/${fileKey}`;
+        console.log(`Fetching file from CloudFront: ${url}`);
+
+        const response = await axios.get(url, {
+          responseType: 'stream'
+        });
+
+        res.setHeader('Content-Type', response.headers['content-type']);
+        res.setHeader('Content-Length', response.headers['content-length']);
+
+        response.data.pipe(res);
+      } catch (error) {
+        console.error('Error retrieving file from CloudFront:', error);
+        res.status(500).send('Error retrieving file from CloudFront');
+      }
+    });
+    break;
+
+  default:
+    throw new Error('Invalid APP_ENV value');
 }
-
-console.log(`STATIC_DIR: ${staticDir}`);
 
 app.get(`/${stage}/*`, async (req, res) => {
   try {
@@ -56,6 +89,7 @@ app.all('*', (req, res) => {
   res.status(404).send('Route not supported');
 });
 
+
 /**
  * Produces the initial non-interactive HTML output of React
  * components. The hydrateRoot method is called on the client
@@ -69,20 +103,30 @@ const createReactApp = async (location: string | Partial<Location<any>>) => {
       <App />
     </StaticRouter>
   );
-  const html = await fs.promises.readFile(path.resolve(staticDir, 'index.html'), 'utf-8');
+
+  let html: string;
+  if (appEnv === 'production') {
+    const indexPath = `${staticSource}/index.html`;
+    const response = await fetch(indexPath);
+    if (!response.ok) {
+      console.log(JSON.stringify(response.status))
+      throw new Error('Failed to fetch index.html from CloudFront');
+    }
+    html = await response.text();
+  }
+  else {
+    const indexPath = path.resolve(staticDir, 'index.html');
+    html = await fs.promises.readFile(indexPath, 'utf-8');
+  }
+
   const reactHtml = html.replace(
-    '<div id="root"></div>', `<div id="root">${reactApp}</div>`);
+    '<div id="root"></div>', `<div id="root">${reactApp}</div>`
+  );
   return reactHtml;
 };
 
-const server = awsServerlessExpress.createServer(app);
-
-exports.handler = (event: APIGatewayProxyEvent, context: Context) => {
-  awsServerlessExpress.proxy(server, event, context);
-};
-
 // For local testing
-if (isLocal) {
+if (port) {
   app.listen(port, () => {
     console.log(`App started: http://localhost:${port}/${stage}/home`);
   });

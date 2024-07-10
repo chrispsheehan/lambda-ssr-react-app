@@ -10,9 +10,12 @@ build build_file_path:
     #!/usr/bin/env bash
     rm -f {{build_file_path}}
     npm i
-    export STAGE=dev
     npm run build
-    zip -r {{build_file_path}} dist node_modules
+    zip -r {{build_file_path}} dist node_modules > /dev/null
+
+static-sync bucket:
+    #!/usr/bin/env bash
+    aws s3 sync {{justfile_directory()}}/public/static s3://{{bucket}}/public/static --delete
 
 deploy:
     #!/usr/bin/env bash
@@ -20,7 +23,10 @@ deploy:
     just build $build_file_path
     cd tf
     terraform init
-    terraform apply -auto-approve -var lambda-zip-path=$build_file_path --replace aws_lambda_function.render
+    terraform apply -auto-approve -var lambda-zip-path=$build_file_path
+    static_files_bucket=$(terraform output -raw static_files_bucket)
+    echo "copying files to $static_files_bucket"
+    just static-sync $static_files_bucket
 
 destroy:
     #!/usr/bin/env bash
