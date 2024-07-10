@@ -50,7 +50,6 @@ switch (appEnv) {
       try {
         const fileKey = req.path.substring(1);
         const url = `${staticSource}/${fileKey}`;
-        console.log(`Fetching file from CloudFront: ${url}`);
 
         const response = await axios.get(url, {
           responseType: 'stream'
