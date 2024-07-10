@@ -10,6 +10,8 @@ import path from 'path';
 import { Location } from 'react-router-dom';
 import React from 'react';
 import axios from "axios";
+import awsServerlessExpress from 'aws-serverless-express';
+import { APIGatewayProxyEvent, Context } from "aws-lambda";
 
 const getEnvVar = (varName: string): string => {
   const value = process.env[varName];
@@ -42,11 +44,11 @@ switch (appEnv) {
   case 'docker':
     const staticDirLocal = path.resolve(__dirname, staticSource);
     staticDir = staticDirLocal;
-    app.use('/static', express.static(staticDirLocal));
+    app.use(`/${stage}/public/static`, express.static(staticDirLocal));
     break;
 
   case 'production':
-    app.use('/static', async (req, res, next: NextFunction) => {
+    app.use(`/${stage}/public/static`, async (req, res, next: NextFunction) => {
       try {
         const fileKey = req.path.substring(1);
         const url = `${staticSource}/${fileKey}`;
@@ -130,3 +132,9 @@ if (port) {
     console.log(`App started: http://localhost:${port}/${stage}/home`);
   });
 }
+
+const server = awsServerlessExpress.createServer(app);
+
+exports.handler = (event: APIGatewayProxyEvent, context: Context) => {
+  awsServerlessExpress.proxy(server, event, context);
+};
