@@ -10,7 +10,7 @@ variable "environment" {
   default     = "dev"
 }
 
-variable "lambda-zip-path" {
+variable "lambda_zip_path" {
   type = string
 }
 
