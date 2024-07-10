@@ -25,6 +25,9 @@ resource "aws_cloudfront_origin_access_control" "oac" {
 }
 
 resource "aws_cloudfront_distribution" "distribution" {
+
+  comment = "${local.static_reference}-cdn"
+
   origin {
     domain_name              = aws_s3_bucket.static_files.bucket_regional_domain_name
     origin_id                = aws_s3_bucket.static_files.bucket_regional_domain_name
@@ -37,7 +40,7 @@ resource "aws_cloudfront_distribution" "distribution" {
   default_cache_behavior {
     allowed_methods  = ["GET", "HEAD"]
     cached_methods   = ["GET", "HEAD"]
-    target_origin_id = "S3-${aws_s3_bucket.static_files.bucket}"
+    target_origin_id = aws_s3_bucket.static_files.bucket_regional_domain_name
 
     forwarded_values {
       query_string = false

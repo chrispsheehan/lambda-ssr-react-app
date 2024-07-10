@@ -2,10 +2,6 @@ resource "aws_s3_bucket" "ssr_code_bucket" {
   bucket = "${local.ssr_reference}-ssr-code"
 }
 
-resource "aws_s3_bucket" "static_bucket" {
-  bucket = "${local.ssr_reference}-ssr-code"
-}
-
 resource "aws_s3_object" "ssr_code_zip" {
   bucket        = aws_s3_bucket.ssr_code_bucket.id
   key           = basename(var.lambda-zip-path)
@@ -27,9 +23,9 @@ resource "aws_lambda_function" "render" {
 
   environment {
     variables = {
-      NODE_ENV   = "production",
+      APP_ENV   = "production",
       STATIC_DIR = "/var/task/dist/public/static",
-      STAGE      = var.environment
+      STATIC_SOURCE      = var.environment
     }
   }
 }

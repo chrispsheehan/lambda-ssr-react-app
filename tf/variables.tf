@@ -17,5 +17,5 @@ variable "lambda-zip-path" {
 variable "base_reference" {
   type        = string
   description = "base all other resource descriptions from this"
-  default     = "lambda-ssr-react"
+  default     = "chrispsheehan-lambda-ssr-react"
 }
