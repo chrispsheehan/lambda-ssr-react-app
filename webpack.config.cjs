@@ -53,11 +53,6 @@ const serverConfig = {
         { from: 'src/client/index.html', to: 'index.html' }
       ]
     }),
-    new webpack.DefinePlugin({
-      'process.env.PORT': JSON.stringify(process.env.PORT),
-      'process.env.STAGE': JSON.stringify(process.env.STAGE),
-      'process.env.STATIC_DIR': JSON.stringify(process.env.STATIC_DIR),
-    }),
   ],
   ignoreWarnings: [/Critical dependency: the request of a dependency is an expression/],
   resolve,

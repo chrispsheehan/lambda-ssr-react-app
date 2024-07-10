@@ -1,3 +1,6 @@
+import { config } from "dotenv";
+config();
+
 import express from 'express';
 import { StaticRouter } from 'react-router-dom/server';
 import ReactDOMServer from 'react-dom/server';
@@ -9,12 +12,31 @@ import { Location } from 'react-router-dom';
 import React from 'react';
 import { APIGatewayProxyEvent, Context } from 'aws-lambda';
 
-const PORT = process.env.PORT;
+const port = process.env.PORT;
 const stage = process.env.STAGE;
+const appEnv = process.env.APP_ENV;
+const staticSource = process.env.STATIC_SOURCE;
+
+var staticDir: string;
 
 const app = express();
-const staticDir = path.resolve(__dirname, '../public/static');
-app.use(`/static`, express.static(staticDir));
+
+console.log(`STAGE: ${stage}`);
+console.log(`APP_ENV: ${appEnv}`);
+console.log(`STATIC_SOURCE: ${staticSource}`);
+
+const isLocal = (appEnv == 'local' || appEnv == 'docker')
+
+
+if (isLocal) {
+  staticDir = path.resolve(__dirname, `${staticSource}`);
+  console.log(`loading /static to ${staticDir}`);
+  app.use(`/static`, express.static(staticDir));
+} else {
+  throw new Error('Invalid APP_ENV value');
+}
+
+console.log(`STATIC_DIR: ${staticDir}`);
 
 app.get(`/${stage}/*`, async (req, res) => {
   try {
@@ -60,8 +82,8 @@ exports.handler = (event: APIGatewayProxyEvent, context: Context) => {
 };
 
 // For local testing
-if (process.env.NODE_ENV !== 'lambda') {
-  app.listen(PORT, () => {
-    console.log(`Server started on port ${PORT}`);
+if (isLocal) {
+  app.listen(port, () => {
+    console.log(`App started: http://localhost:${port}/${stage}/home`);
   });
 }

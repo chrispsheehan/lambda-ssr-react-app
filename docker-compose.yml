@@ -1,11 +1,9 @@
 services:
   ssr-web:
     image: node:alpine
-    environment:
-      - PORT=3001
-      - STAGE=local
+    env_file: .env.docker
     healthcheck:
-      test: ["CMD-SHELL", "wget --quiet --spider --tries=1 http://localhost:3001/local/home || exit 1"]
+      test: ["CMD-SHELL", "wget --quiet --spider --tries=1 http://localhost:3001/docker/home || exit 1"]
       interval: 10s
       timeout: 2s
       retries: 3
@@ -13,6 +11,7 @@ services:
     container_name: ssr-web
     volumes:
       - ./src/:/app/src
+      - ./public/static:/app/public/static
       - ./package.json:/app/package.json
       - ./tsconfig.json:/app/tsconfig.json
       - ./webpack.config.cjs:/app/webpack.config.cjs
@@ -26,9 +25,7 @@ services:
       ssr-web:
         condition: service_healthy
     image: mcr.microsoft.com/playwright
-    environment: 
-      - BASE_URL=http://ssr-web:3001
-      - STAGE=local
+    env_file: .env.docker
     container_name: ssr-test
     volumes:
       - ./tests:/app/tests
