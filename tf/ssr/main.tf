@@ -25,7 +25,7 @@ resource "aws_lambda_function" "render" {
     variables = {
       APP_ENV       = "production",
       STAGE         = var.environment,
-      STATIC_SOURCE = "https://${var.static_files_source}/public/static"
+      STATIC_SOURCE = var.static_files_source
     }
   }
 }

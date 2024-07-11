@@ -9,7 +9,7 @@ terraform {
 
   backend "s3" {
     bucket         = "chrispsheehan-lambda-ssr-react-app-tfstate"
-    key            = "state/terraform.tfstate"
+    key            = "ssr-state/terraform.tfstate"
     region         = "eu-west-2"
     encrypt        = true
     dynamodb_table = "chrispsheehan-lambda-ssr-react-app-tf-lockid"
