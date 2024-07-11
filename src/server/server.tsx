@@ -108,14 +108,12 @@ const createReactApp = async (location: string | Partial<Location<any>>) => {
   let html: string;
   if (appEnv === 'production') {
     const indexPath = `${staticSource}/index.html`;
-    const response = await fetch(indexPath);
-    if (!response.ok) {
-      console.log(JSON.stringify(response.status))
+    const response = await axios.get(indexPath);
+    if (response.status !== 200) {
       throw new Error('Failed to fetch index.html from CloudFront');
     }
-    html = await response.text();
-  }
-  else {
+    html = response.data;
+  } else {
     const indexPath = path.resolve(staticDir, 'index.html');
     html = await fs.promises.readFile(indexPath, 'utf-8');
   }

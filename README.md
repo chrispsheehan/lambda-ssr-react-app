@@ -36,3 +36,23 @@ just deploy
   "logs:*"
 ]
 ```
+
+## lambda test payload
+
+```json
+{
+  "httpMethod": "GET",
+  "resource": "/dev/about",
+  "path": "/dev/about",
+  "headers": {
+    "Content-Type": "application/json"
+  },
+  "requestContext": {
+    "resourcePath": "/dev/about",
+    "httpMethod": "GET",
+    "requestId": "c6af9ac6-7b61-11e6-9a41-93e8deadbeef",
+    "requestTime": "09/Apr/2015:12:34:56 +0000",
+    "path": "/dev/about"
+  }
+}
+```

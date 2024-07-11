@@ -59,13 +59,16 @@ const serverConfig = {
   watchOptions,
 };
 
+const publicPath = process.env.CLIENT_PUBLIC_PATH;
+
 const clientConfig = {
   target: 'web',
   mode: 'development',
   entry: './src/client/index.tsx',
   output: {
     path: path.join(__dirname, 'public/static'),
-    publicPath: '/static/',
+    // publicPath: `/public/static/`,
+    publicPath: publicPath,
     filename: 'client.js',
   },
   module: babelLoader,
