@@ -23,7 +23,6 @@ build build_file_path:
 
 static-sync bucket:
     #!/usr/bin/env bash
-    aws s3 sync {{justfile_directory()}}/public s3://{{bucket}}/public --delete
     aws s3 sync {{justfile_directory()}}/public/static s3://{{bucket}}/public/static --delete --exact-timestamps
 
 check:
