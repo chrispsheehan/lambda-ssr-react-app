@@ -1,18 +1,32 @@
-import {Routes, Route} from 'react-router-dom';
+import { Routes, Route } from 'react-router-dom';
 import Home from './Home';
 import About from './About';
 import Navbar from './Navbar';
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 
 const App = () => {
+  const [hydrated, setHydrated] = useState(false);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setHydrated(true);
+    }, 5000); // Simulate a 5-second delay
+
+    return () => clearTimeout(timer);
+  }, []);
+
   return (
     <main>
       <Navbar />
-      <Routes>
-        <Route path="/home" element={ <Home/> } />
-        <Route path="/about" element={ <About/> } />
-        <Route path="*" element={ <Home/> } />
-      </Routes>
+      {hydrated ? (
+        <Routes>
+          <Route path="/home" element={<Home />} />
+          <Route path="/about" element={<About />} />
+          <Route path="*" element={<Home />} />
+        </Routes>
+      ) : (
+        <div>Loading App...</div>
+      )}
     </main>
   );
 };
