@@ -9,9 +9,9 @@ permissions:
   contents: read
 
 env:
-  aws_account_id: ${{ vars.AWS_ACCOUNT_ID }}
-  aws_region: ${{ vars.AWS_REGION }}
-  aws_role: ${{ vars.AWS_ROLE }}
+  TF_VAR_region: ${{ vars.AWS_REGION }}
+  TF_VAR_environment: dev
+  TF_VAR_base_reference: chrispsheehan-lambda-ssr-react
 
 jobs:
   deploy:
@@ -27,12 +27,50 @@ jobs:
 
       - uses: aws-actions/configure-aws-credentials@v4
         with:
-            aws-region: ${{ env.aws_region }}
-            role-to-assume: arn:aws:iam::${{ env.aws_account_id }}:role/${{ env.aws_role }}
+            aws-region: ${{ vars.AWS_REGION }}
+            role-to-assume: arn:aws:iam::${{ vars.AWS_ACCOUNT_ID }}:role/${{ vars.AWS_ROLE }}
             role-session-name: GitHubActions
   
       - uses: extractions/setup-just@v2
 
-      - name: deploy
+      - name: deploy cdn
+        id: deploy_cdn
         shell: bash
-        run: just deploy
+        run: |
+          cd tf/cdn
+          terraform init
+          terraform apply -auto-approve
+
+          STATIC_FILES_BUCKET=$(terraform output -raw static_files_bucket)
+          STATIC_FILES_CDN=$(terraform output -raw static_files_cdn)
+          CLOUDFRONT_ID=$(terraform output -raw cloudfront_id)
+
+          echo "STATIC_FILES_BUCKET=$STATIC_FILES_BUCKET" >> $GITHUB_OUTPUT
+          echo "STATIC_FILES_CDN=$STATIC_FILES_CDN" >> $GITHUB_OUTPUT
+          echo "CLOUDFRONT_ID=$CLOUDFRONT_ID" >> $GITHUB_OUTPUT
+
+      - name: build app
+        id: build_app
+        shell: bash
+        env:
+          CLIENT_PUBLIC_PATH: ${{ steps.deploy_cdn.outputs.STATIC_FILES_CDN }}
+          STAGE: ${{ env.TF_VAR_environment }}
+          SHORT_SHA: $(echo $GITHUB_SHA | cut -c 1-6)
+        run: |
+          LAMBDA_BUILD_FILE_PATH=${GITHUB_WORKSPACE}/${{ env.SHORT_SHA }}.zip
+          just build $LAMBDA_BUILD_FILE_PATH
+          echo "LAMBDA_BUILD_FILE_PATH=$LAMBDA_BUILD_FILE_PATH" >> $GITHUB_OUTPUT
+
+      - name: deploy ssr
+        id: deploy_ssr
+        shell: bash
+        run: |
+          cd tf/ssr
+          terraform init
+          terraform apply -auto-approve -var lambda_zip_path=$LAMBDA_BUILD_FILE_PATH -var static_files_source=$STATIC_FILES_CDN
+
+      - name: sync static files
+        shell: bash
+        run: |
+          just static-sync $STATIC_FILES_BUCKET
+          aws cloudfront create-invalidation --distribution-id $CLOUDFRONT_ID --paths "/*"

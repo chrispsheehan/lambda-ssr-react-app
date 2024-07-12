@@ -9,9 +9,9 @@ permissions:
   contents: read
 
 env:
-  aws_account_id: ${{ vars.AWS_ACCOUNT_ID }}
-  aws_region: ${{ vars.AWS_REGION }}
-  aws_role: ${{ vars.AWS_ROLE }}
+  TF_VAR_region: ${{ vars.AWS_REGION }}
+  TF_VAR_environment: dev
+  TF_VAR_base_reference: chrispsheehan-lambda-ssr-react
 
 jobs:
   deploy:
@@ -19,20 +19,25 @@ jobs:
     steps:
       - name: checkout
         uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-          ref: ${{ inputs.branch }}
 
       - uses: extractions/setup-just@v2
 
       - uses: aws-actions/configure-aws-credentials@v4
         with:
-            aws-region: ${{ env.aws_region }}
-            role-to-assume: arn:aws:iam::${{ env.aws_account_id }}:role/${{ env.aws_role }}
+            aws-region: ${{ vars.AWS_REGION }}
+            role-to-assume: arn:aws:iam::${{ vars.AWS_ACCOUNT_ID }}:role/${{ vars.AWS_ROLE }}
             role-session-name: GitHubActions
-  
-      - uses: extractions/setup-just@v2
 
-      - name: destroy
+      - name: destroy cdn
         shell: bash
-        run: just destroy
+        run: |
+          cd tf/cdn
+          terraform init
+          terraform destroy -auto-approve
+
+      - name: destroy ssr
+        shell: bash
+        run: |
+          cd tf/ssr
+          terraform init
+          terraform destroy -auto-approve --var lambda_zip_path=/no.zip -var static_files_source=blh.com

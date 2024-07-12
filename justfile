@@ -19,7 +19,7 @@ build build_file_path:
     rm -f {{build_file_path}}
     npm i
     npm run build
-    zip -r {{build_file_path}} dist node_modules > /dev/null
+    zip -r {{build_file_path}} {{justfile_directory()}}/dist {{justfile_directory()}}/node_modules > /dev/null
 
 static-sync bucket:
     #!/usr/bin/env bash
@@ -42,7 +42,7 @@ deploy:
 
     cd {{justfile_directory()}}/tf/ssr
     terraform init
-    terraform apply -auto-approve -var environment=$(just _environment) -var base_reference=$(just _base_reference) --var lambda_zip_path=$build_file_path -var static_files_source=$static_files_cdn
+    terraform apply -auto-approve -var environment=$(just _environment) -var base_reference=$(just _base_reference) -var lambda_zip_path=$build_file_path -var static_files_source=$static_files_cdn
     
     echo "copying files to $static_files_bucket"
     just static-sync $static_files_bucket
@@ -50,9 +50,13 @@ deploy:
 
 destroy:
     #!/usr/bin/env bash
-    cd tf
+    cd {{justfile_directory()}}/tf/cdn
     terraform init
-    terraform destroy -auto-approve -var lambda_zip_path=/a.zip
+    terraform destroy -auto-approve -var environment=$(just _environment) -var base_reference=$(just _base_reference)
+
+    cd {{justfile_directory()}}/tf/ssr
+    terraform init
+    terraform destroy -auto-approve -var environment=$(just _environment) -var base_reference=$(just _base_reference) --var lambda_zip_path=/no.zip -var static_files_source=blh.com
 
 check:
     #!/usr/bin/env bash
