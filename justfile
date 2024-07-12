@@ -19,7 +19,7 @@ build build_file_path:
     rm -f {{build_file_path}}
     npm i
     npm run build
-    zip -r {{build_file_path}} {{justfile_directory()}}/dist {{justfile_directory()}}/node_modules > /dev/null
+    zip -r {{build_file_path}} {{justfile_directory()}}/dist {{justfile_directory()}}/node_modules
 
 static-sync bucket:
     #!/usr/bin/env bash
