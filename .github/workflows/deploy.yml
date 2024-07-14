@@ -68,7 +68,7 @@ jobs:
           echo lambda file path: ${{ steps.build_app.outputs.LAMBDA_BUILD_FILE_PATH }}
           cd tf/ssr
           terraform init
-          terraform apply -auto-approve -var lambda_zip_path=${{ steps.build_app.outputs.LAMBDA_BUILD_FILE_PATH }} -var static_files_source= ${{ steps.deploy_cdn.outputs.STATIC_FILES_CDN }}
+          terraform apply -auto-approve -var lambda_zip_path=${{ steps.build_app.outputs.LAMBDA_BUILD_FILE_PATH }} -var static_files_source=${{ steps.deploy_cdn.outputs.STATIC_FILES_CDN }}
 
       - name: sync static files
         shell: bash
