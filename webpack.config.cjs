@@ -80,7 +80,7 @@ const clientConfig = {
     }),
     new CopyWebpackPlugin({
       patterns: [
-        { from: 'assets', to: path.join(__dirname, 'public/assets') }
+        { from: path.resolve(__dirname, 'assets'), to: path.join(__dirname, 'public/assets') }
       ]
     }),
   ],

@@ -42,13 +42,12 @@ app.use((req, res, next) => {
 switch (appEnv) {
   case 'local':
   case 'docker':
-    const staticDirLocal = path.resolve(__dirname, staticSource);
-    staticDir = staticDirLocal;
-    app.use(`/${stage}/public/static`, express.static(staticDirLocal));
+    staticDir = path.resolve(__dirname, staticSource);
+    app.use(`/${stage}/public`, express.static(staticDir));
     break;
 
   case 'production':
-    app.use(`/${stage}/public/static`, async (req, res, next: NextFunction) => {
+    app.use(`/${stage}/public`, async (req, res, next: NextFunction) => {
       try {
         const fileKey = req.path.substring(1);
         const url = `${staticSource}/${fileKey}`;
@@ -107,14 +106,14 @@ const createReactApp = async (location: string | Partial<Location<any>>) => {
 
   let html: string;
   if (appEnv === 'production') {
-    const indexPath = `${staticSource}/index.html`;
+    const indexPath = `${staticSource}/static/index.html`;
     const response = await axios.get(indexPath);
     if (response.status !== 200) {
       throw new Error('Failed to fetch index.html from CloudFront');
     }
     html = response.data;
   } else {
-    const indexPath = path.resolve(staticDir, 'index.html');
+    const indexPath = path.resolve(staticDir, 'static/index.html');
     html = await fs.promises.readFile(indexPath, 'utf-8');
   }
 

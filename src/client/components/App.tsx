@@ -10,7 +10,7 @@ const App = () => {
   useEffect(() => {
     const timer = setTimeout(() => {
       setHydrated(true);
-    }, 5000); // Simulate a 5-second delay
+    }, 1000); // Simulate a 1-second delay
 
     return () => clearTimeout(timer);
   }, []);

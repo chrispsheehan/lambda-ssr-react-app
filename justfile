@@ -21,7 +21,11 @@ build build_file_path:
     npm run build
     zip -r {{build_file_path}} dist node_modules > /dev/null
 
-static-sync bucket {{cloudfront_id}}:
+run:
+    #!/usr/bin/env bash
+    docker-compose up --build
+
+static-sync bucket cloudfront_id:
     #!/usr/bin/env bash
     aws s3 sync {{justfile_directory()}}/public/assets s3://{{bucket}}/public/assets --delete
     aws s3 sync {{justfile_directory()}}/public/static s3://{{bucket}}/public/static --delete --exact-timestamps
