@@ -67,7 +67,6 @@ const clientConfig = {
   entry: './src/client/index.tsx',
   output: {
     path: path.join(__dirname, 'public/static'),
-    // publicPath: `/public/static/`,
     publicPath: publicPath,
     filename: 'client.js',
   },
@@ -78,6 +77,11 @@ const clientConfig = {
     }),
     new webpack.DefinePlugin({
       'process.env.STAGE': JSON.stringify(process.env.STAGE),
+    }),
+    new CopyWebpackPlugin({
+      patterns: [
+        { from: 'assets', to: path.join(__dirname, 'public/assets') }
+      ]
     }),
   ],
   resolve,

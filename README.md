@@ -6,6 +6,7 @@
 - https://wittcode.com/blogs/server-side-rendering-react-with-express
 - https://docs.aws.amazon.com/amplify/latest/userguide/server-side-rendering-amplify.html
 - https://react.dev/reference/react-dom/server
+- https://disha.hashnode.dev/how-to-add-favicon-in-react
 
 ## Run Locally
 

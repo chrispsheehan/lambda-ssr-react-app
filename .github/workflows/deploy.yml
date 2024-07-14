@@ -72,6 +72,4 @@ jobs:
 
       - name: sync static files
         shell: bash
-        run: |
-          just static-sync ${{ steps.deploy_cdn.outputs.STATIC_FILES_BUCKET }}
-          aws cloudfront create-invalidation --distribution-id ${{ steps.deploy_cdn.outputs.CLOUDFRONT_ID }} --paths "/*"
+        run: just static-sync ${{ steps.deploy_cdn.outputs.STATIC_FILES_BUCKET }} ${{ steps.deploy_cdn.outputs.CLOUDFRONT_ID }}
