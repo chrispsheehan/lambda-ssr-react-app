@@ -3,7 +3,7 @@ output "static_files_bucket" {
 }
 
 output "static_files_cdn" {
-  value = "https://${aws_cloudfront_distribution.distribution.domain_name}"
+  value = "https://${aws_cloudfront_distribution.distribution.domain_name}/public"
 }
 
 output "cloudfront_id" {

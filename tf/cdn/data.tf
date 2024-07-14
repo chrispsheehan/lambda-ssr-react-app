@@ -3,7 +3,7 @@ data "aws_iam_policy_document" "static_files_policy" {
 
   statement {
     actions   = ["s3:GetObject"]
-    resources = ["${aws_s3_bucket.static_files.arn}/public/static/*"]
+    resources = ["${aws_s3_bucket.static_files.arn}/public/*"]
 
     principals {
       type        = "Service"
