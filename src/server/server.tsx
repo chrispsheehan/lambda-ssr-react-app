@@ -128,7 +128,7 @@ const createReactApp = async (location: string | Partial<Location<any>>) => {
 
   const reactHtml = html.replace(
     '<div id="root"><main><div>Loading App...</div></main></div>', `<div id="root">${reactApp}</div>`)
-    .replace('{{FAVICON_PATH}}', `${staticSource}/public/assets/favicon.ico`);
+    .replace('{{FAVICON_PATH}}', `${staticSource}/assets/favicon.ico`);
   return reactHtml;
 };
 
