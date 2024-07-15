@@ -48,6 +48,7 @@ switch (appEnv) {
     staticDir = path.resolve(__dirname, staticSource);
     app.use(`${publicPath}/static`, express.static(path.resolve(staticDir, 'static')));
     app.use(`${publicPath}/assets`, express.static(path.resolve(staticDir, 'assets')));
+    app.use(`${publicPath}/assets/styles`, express.static(path.resolve(staticDir, 'assets/styles')));
     break;
 
   case 'production':
@@ -85,6 +86,7 @@ app.all('*', (req, res) => {
 const createReactApp = async (location: string | Partial<Location<any>>) => {
   const indexFileRef = "static/index.html";
   const faviconFileRef = "assets/favicon.ico";
+  const stylesCSSFileRef = "assets/styles/styles.scss";
 
   const reactApp = ReactDOMServer.renderToString(
     <StaticRouter location={location} basename={`/${stage}`}>
@@ -94,6 +96,7 @@ const createReactApp = async (location: string | Partial<Location<any>>) => {
 
   let html: string;
   let faviconPath: string;
+  let scssPath: string;
   if (appEnv === 'production') {
     const indexPath = `${staticSource}/${indexFileRef}`;
     const response = await axios.get(indexPath);
@@ -102,15 +105,18 @@ const createReactApp = async (location: string | Partial<Location<any>>) => {
     }
     html = response.data;
     faviconPath = `${staticSource}/${faviconFileRef}`;
+    scssPath = `${staticSource}/${stylesCSSFileRef}`
   } else {
     const indexPath = path.resolve(staticDir, indexFileRef);
     html = await fs.promises.readFile(indexPath, 'utf-8');
     faviconPath = `${publicPath}/${faviconFileRef}`;
+    scssPath = `${publicPath}/${stylesCSSFileRef}`
   }
 
   const reactHtml = html.replace(
     '<div id="root"><main><div>Loading App...</div></main></div>', `<div id="root">${reactApp}</div>`)
-    .replace('{{FAVICON_PATH}}', faviconPath);
+    .replace('{{FAVICON_PATH}}', faviconPath)
+    .replace('{{STYLE_CSS_PATH}}', scssPath);
   return reactHtml;
 };
 

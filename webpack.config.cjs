@@ -1,7 +1,8 @@
 const path = require('path');
 const webpack = require('webpack');
 const dotenv = require('dotenv');
-const htmlWebpackPlugin = require('html-webpack-plugin');
+const HtmlWebpackPlugin = require('html-webpack-plugin');
+const MiniCssExtractPlugin = require('mini-css-extract-plugin');
 const CopyWebpackPlugin = require('copy-webpack-plugin');
 
 dotenv.config();
@@ -30,7 +31,23 @@ const babelLoader = {
           ]
         }
       }
-    }
+    },
+    {
+      test: /\.scss$/,
+      include: path.join(__dirname, 'assets/styles'),
+      use: [
+          MiniCssExtractPlugin.loader,
+          {
+              loader: 'css-loader',
+              options: {
+                  importLoaders: 2,
+                  sourceMap: true
+              }
+          },
+          'sass-loader',
+          'postcss-loader'
+      ],
+    },
   ]
 };
 
@@ -72,11 +89,14 @@ const clientConfig = {
   },
   module: babelLoader,
   plugins: [
-    new htmlWebpackPlugin({
+    new HtmlWebpackPlugin({
       template: `${__dirname}/src/client/index.html`
     }),
     new webpack.DefinePlugin({
       'process.env.STAGE': JSON.stringify(process.env.STAGE),
+    }),
+    new MiniCssExtractPlugin({
+      filename: 'styles.scss'
     }),
     new CopyWebpackPlugin({
       patterns: [
