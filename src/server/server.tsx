@@ -34,6 +34,8 @@ console.log(`STAGE: ${stage}`);
 console.log(`APP_ENV: ${appEnv}`);
 console.log(`STATIC_SOURCE: ${staticSource}`);
 
+const publicPath = `/${stage}/public`;
+
 app.use((req, res, next) => {
   console.log(`Request received: ${req.method} ${req.url}`);
   next();
@@ -43,8 +45,8 @@ switch (appEnv) {
   case 'local':
   case 'docker':
     staticDir = path.resolve(__dirname, staticSource);
-    app.use(`/${stage}/public/static`, express.static(path.resolve(staticDir, 'static')));
-    app.use(`/${stage}/public/assets`, express.static(path.resolve(staticDir, 'assets')));
+    app.use(`${publicPath}/static`, express.static(path.resolve(staticDir, 'static')));
+    app.use(`${publicPath}/assets`, express.static(path.resolve(staticDir, 'assets')));
     break;
 
   case 'production':
@@ -52,7 +54,7 @@ switch (appEnv) {
       try {
         const fileKey = req.path.substring(1); // Remove leading '/'
         const url = `${baseUrl}/${fileKey}`;
-        console.log(`reading cloudfront ${url}`)
+        console.log(`reading ${url}`)
     
         const response = await axios.get(url, {
           responseType: 'stream'
@@ -74,7 +76,7 @@ switch (appEnv) {
       }
     };
 
-    app.use(`/${stage}/public/static`, retrieveFileFromCloudFront(staticSource));
+    app.use(`${publicPath}/static`, retrieveFileFromCloudFront(staticSource));
     break;
 
   default:
@@ -83,7 +85,6 @@ switch (appEnv) {
 
 app.get(`/${stage}/*`, async (req, res) => {
   try {
-    console.log(`${req.method}: ${req.url}`);
     const indexHtml = await createReactApp(req.url);
     res.setHeader('Content-Type', 'text/html; charset=utf-8');
     res.status(200).send(indexHtml);
@@ -107,6 +108,9 @@ app.all('*', (req, res) => {
  * @return {string}
  */
 const createReactApp = async (location: string | Partial<Location<any>>) => {
+  const indexFileRef = "static/index.html";
+  const faviconFileRef = "assets/favicon.ico";
+
   const reactApp = ReactDOMServer.renderToString(
     <StaticRouter location={location} basename={`/${stage}`}>
       <App />
@@ -114,21 +118,24 @@ const createReactApp = async (location: string | Partial<Location<any>>) => {
   );
 
   let html: string;
+  let faviconPath: string;
   if (appEnv === 'production') {
-    const indexPath = `${staticSource}/static/index.html`;
+    const indexPath = `${staticSource}/${indexFileRef}`;
     const response = await axios.get(indexPath);
     if (response.status !== 200) {
       throw new Error('Failed to fetch index.html from CloudFront');
     }
     html = response.data;
+    faviconPath = `${staticSource}/${faviconFileRef}`;
   } else {
-    const indexPath = path.resolve(staticDir, 'static/index.html');
+    const indexPath = path.resolve(staticDir, indexFileRef);
     html = await fs.promises.readFile(indexPath, 'utf-8');
+    faviconPath = `${publicPath}/${faviconFileRef}`;
   }
 
   const reactHtml = html.replace(
     '<div id="root"><main><div>Loading App...</div></main></div>', `<div id="root">${reactApp}</div>`)
-    .replace('{{FAVICON_PATH}}', `${staticSource}/assets/favicon.ico`);
+    .replace('{{FAVICON_PATH}}', faviconPath);
   return reactHtml;
 };
 
