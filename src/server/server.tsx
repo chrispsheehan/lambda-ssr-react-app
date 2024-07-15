@@ -60,6 +60,12 @@ switch (appEnv) {
     
         res.setHeader('Content-Type', response.headers['content-type']);
         res.setHeader('Content-Length', response.headers['content-length']);
+
+        if (fileKey.endsWith('favicon.ico')) {
+          res.setHeader('Content-Type', 'image/x-icon');
+        } else {
+          res.setHeader('Content-Type', response.headers['content-type']);
+        }
     
         response.data.pipe(res);
       } catch (error) {
