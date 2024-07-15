@@ -3,6 +3,17 @@ resource "aws_s3_bucket" "static_files" {
   force_destroy = true
 }
 
+resource "aws_s3_bucket_cors_configuration" "bucket_cors" {
+  bucket = aws_s3_bucket.static_files.id
+
+  cors_rule {
+    allowed_headers = ["*"]
+    allowed_methods = ["GET", "HEAD"]
+    allowed_origins = ["https://${aws_cloudfront_distribution.distribution.domain_name}"]
+    max_age_seconds = 3000
+  }
+}
+
 resource "aws_s3_bucket_ownership_controls" "static_files" {
   depends_on = [aws_s3_bucket.static_files]
   bucket     = aws_s3_bucket.static_files.id
