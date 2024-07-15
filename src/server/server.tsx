@@ -1,7 +1,7 @@
 import { config } from "dotenv";
 config();
 
-import express, { NextFunction } from 'express';
+import express from 'express';
 import { StaticRouter } from 'react-router-dom/server';
 import ReactDOMServer from 'react-dom/server';
 import App from '../client/components/App';
@@ -12,6 +12,7 @@ import React from 'react';
 import axios from "axios";
 import awsServerlessExpress from 'aws-serverless-express';
 import { APIGatewayProxyEvent, Context } from "aws-lambda";
+import retrieveFileFromCloudFront from './cloudfront';
 
 const getEnvVar = (varName: string): string => {
   const value = process.env[varName];
@@ -50,32 +51,6 @@ switch (appEnv) {
     break;
 
   case 'production':
-    const retrieveFileFromCloudFront = (baseUrl: string) => async (req: any, res: any, next: NextFunction) => {
-      try {
-        const fileKey = req.path.substring(1); // Remove leading '/'
-        const url = `${baseUrl}/${fileKey}`;
-        console.log(`reading ${url}`)
-    
-        const response = await axios.get(url, {
-          responseType: 'stream'
-        });
-    
-        res.setHeader('Content-Type', response.headers['content-type']);
-        res.setHeader('Content-Length', response.headers['content-length']);
-
-        if (fileKey.endsWith('favicon.ico')) {
-          res.setHeader('Content-Type', 'image/x-icon');
-        } else {
-          res.setHeader('Content-Type', response.headers['content-type']);
-        }
-    
-        response.data.pipe(res);
-      } catch (error) {
-        console.error('Error retrieving file from CloudFront:', error);
-        res.status(500).send('Error retrieving file from CloudFront');
-      }
-    };
-
     app.use(`${publicPath}/static`, retrieveFileFromCloudFront(staticSource));
     break;
 
