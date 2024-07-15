@@ -43,28 +43,32 @@ switch (appEnv) {
   case 'local':
   case 'docker':
     staticDir = path.resolve(__dirname, staticSource);
-    app.use(`/${stage}/public`, express.static(staticDir));
+    app.use(`/${stage}/public/static`, express.static(path.resolve(staticDir, 'static')));
+    app.use(`/${stage}/public/assets`, express.static(path.resolve(staticDir, 'assets')));
     break;
 
   case 'production':
-    app.use(`/${stage}/public`, async (req, res, next: NextFunction) => {
+    const retrieveFileFromCloudFront = async (req: any, res: any, next: NextFunction) => {
       try {
-        const fileKey = req.path.substring(1);
+        const fileKey = req.path.substring(1); // Remove leading '/'
         const url = `${staticSource}/${fileKey}`;
-
+    
         const response = await axios.get(url, {
           responseType: 'stream'
         });
-
+    
         res.setHeader('Content-Type', response.headers['content-type']);
         res.setHeader('Content-Length', response.headers['content-length']);
-
+    
         response.data.pipe(res);
       } catch (error) {
         console.error('Error retrieving file from CloudFront:', error);
         res.status(500).send('Error retrieving file from CloudFront');
       }
-    });
+    };
+
+    app.use(`/${stage}/public/static`, retrieveFileFromCloudFront);
+    app.use(`/${stage}/public/assets`, retrieveFileFromCloudFront);
     break;
 
   default:
@@ -88,7 +92,6 @@ app.all('*', (req, res) => {
   console.log(`***ROUTE NOT SUPPORTED*** ${req.method}: ${req.url}`);
   res.status(404).send('Route not supported');
 });
-
 
 /**
  * Produces the initial non-interactive HTML output of React

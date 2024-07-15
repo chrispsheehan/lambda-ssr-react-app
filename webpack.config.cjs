@@ -67,7 +67,7 @@ const clientConfig = {
   entry: './src/client/index.tsx',
   output: {
     path: path.join(__dirname, 'public/static'),
-    publicPath: publicPath,
+    publicPath: `${publicPath}/static`,
     filename: 'client.js',
   },
   module: babelLoader,
