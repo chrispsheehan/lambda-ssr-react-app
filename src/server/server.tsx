@@ -48,10 +48,11 @@ switch (appEnv) {
     break;
 
   case 'production':
-    const retrieveFileFromCloudFront = async (req: any, res: any, next: NextFunction) => {
+    const retrieveFileFromCloudFront = (baseUrl: string) => async (req: any, res: any, next: NextFunction) => {
       try {
         const fileKey = req.path.substring(1); // Remove leading '/'
-        const url = `${staticSource}/${fileKey}`;
+        const url = `${baseUrl}/${fileKey}`;
+        console.log(`reading cloudfront ${url}`)
     
         const response = await axios.get(url, {
           responseType: 'stream'
@@ -67,8 +68,8 @@ switch (appEnv) {
       }
     };
 
-    app.use(`/${stage}/public/static`, retrieveFileFromCloudFront);
-    app.use(`/${stage}/public/assets`, retrieveFileFromCloudFront);
+    app.use(`/${stage}/public/static`, retrieveFileFromCloudFront(staticSource));
+    app.use(`/${stage}/public/assets`, retrieveFileFromCloudFront(`${staticSource}/assets`));
     break;
 
   default:
