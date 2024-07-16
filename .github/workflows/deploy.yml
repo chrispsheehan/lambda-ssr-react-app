@@ -57,6 +57,7 @@ jobs:
       lambda_build_file_path: ${{ steps.build_app.outputs.LAMBDA_BUILD_FILE_PATH }}
     steps:
       - uses: actions/checkout@v4
+      - uses: extractions/setup-just@v2
       - uses: aws-actions/configure-aws-credentials@v4
         with:
             aws-region: ${{ vars.AWS_REGION }}
