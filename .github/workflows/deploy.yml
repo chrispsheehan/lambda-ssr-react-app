@@ -55,6 +55,7 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       lambda_build_file_path: ${{ steps.build_app.outputs.LAMBDA_BUILD_FILE_PATH }}
+      web_url: ${{ steps.set_vars.outputs.WEB_URL }}
     steps:
       - uses: actions/checkout@v4
       - uses: extractions/setup-just@v2
@@ -84,6 +85,13 @@ jobs:
         run: |
           cd tf/ssr
           terraform apply -auto-approve -var lambda_zip_path=${{ steps.build_app.outputs.LAMBDA_BUILD_FILE_PATH }} -var static_files_source=${{ needs.deploy-cdn.outputs.static_files_cdn }}
+      - name: set vars
+        id: set_vars
+        shell: bash
+        run: |
+          cd tf/ssr
+          WEB_URL=$(terraform output -raw web_url)
+          echo "WEB_URL=$WEB_URL" >> $GITHUB_OUTPUT
 
   file-sync:
     needs:
@@ -101,3 +109,21 @@ jobs:
       - name: sync static files
         shell: bash
         run: just static-sync ${{ needs.deploy-cdn.outputs.static_files_bucket }} ${{ needs.deploy-cdn.outputs.cloudfront_id }}
+  
+  test:
+    needs:
+      - deploy-ssr
+      - file-sync
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: install
+        shell: bash
+        run: |
+          npm i @playwright/test
+          npx playwright install-deps
+      - name: test
+        shell: bash
+        env:
+          BASE_URL: ${{ needs.deploy-ssr.outputs.web_url }}
+        run: npx playwright test
