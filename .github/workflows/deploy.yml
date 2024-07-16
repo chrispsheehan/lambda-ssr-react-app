@@ -14,46 +14,55 @@ env:
   TF_VAR_base_reference: chrispsheehan-lambda-ssr-react
 
 jobs:
-  deploy:
+  deploy-cdn:
     runs-on: ubuntu-latest
+    outputs:
+      static_files_bucket: ${{ steps.set_vars.outputs.STATIC_FILES_BUCKET }}
+      static_files_cdn: ${{ steps.set_vars.outputs.STATIC_FILES_CDN }}
+      cloudfront_id: ${{ steps.set_vars.outputs.CLOUDFRONT_ID }}
     steps:
-      - name: checkout
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-          ref: ${{ inputs.branch }}
-
-      - uses: extractions/setup-just@v2
-
+      - uses: actions/checkout@v4
       - uses: aws-actions/configure-aws-credentials@v4
         with:
             aws-region: ${{ vars.AWS_REGION }}
             role-to-assume: arn:aws:iam::${{ vars.AWS_ACCOUNT_ID }}:role/${{ vars.AWS_ROLE }}
             role-session-name: GitHubActions
-  
-      - uses: extractions/setup-just@v2
-
-      - name: deploy cdn
-        id: deploy_cdn
+      - name: init
         shell: bash
         run: |
           cd tf/cdn
           terraform init
+      - name: destroy
+        shell: bash
+        run: |
+          cd tf/cdn
           terraform apply -auto-approve
-
+      - name: set vars
+        id: set_vars
+        shell: bash
+        run: |
+          cd tf/cdn
           STATIC_FILES_BUCKET=$(terraform output -raw static_files_bucket)
           STATIC_FILES_CDN=$(terraform output -raw static_files_cdn)
           CLOUDFRONT_ID=$(terraform output -raw cloudfront_id)
-
           echo "STATIC_FILES_BUCKET=$STATIC_FILES_BUCKET" >> $GITHUB_OUTPUT
           echo "STATIC_FILES_CDN=$STATIC_FILES_CDN" >> $GITHUB_OUTPUT
           echo "CLOUDFRONT_ID=$CLOUDFRONT_ID" >> $GITHUB_OUTPUT
 
+  build-app:
+    needs: 
+      - deploy-cdn
+    runs-on: ubuntu-latest
+    outputs:
+      lambda_build_file_path: ${{ steps.build_app.outputs.LAMBDA_BUILD_FILE_PATH }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: extractions/setup-just@v2
       - name: build app
         id: build_app
         shell: bash
         env:
-          CLIENT_PUBLIC_PATH: ${{ steps.deploy_cdn.outputs.STATIC_FILES_CDN }}
+          CLIENT_PUBLIC_PATH: ${{ needs.deploy-cdn.outputs.static_files_cdn }}
           STAGE: ${{ env.TF_VAR_environment }}
           SHORT_SHA: $(echo $GITHUB_SHA | cut -c 1-6)
         run: |
@@ -61,15 +70,42 @@ jobs:
           just build $LAMBDA_BUILD_FILE_PATH
           echo "LAMBDA_BUILD_FILE_PATH=$LAMBDA_BUILD_FILE_PATH" >> $GITHUB_OUTPUT
 
-      - name: deploy ssr
-        id: deploy_ssr
+  deploy-ssr:
+    needs:
+      - build-app
+      - deploy-cdn
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: aws-actions/configure-aws-credentials@v4
+        with:
+            aws-region: ${{ vars.AWS_REGION }}
+            role-to-assume: arn:aws:iam::${{ vars.AWS_ACCOUNT_ID }}:role/${{ vars.AWS_ROLE }}
+            role-session-name: GitHubActions
+      - name: init
         shell: bash
         run: |
-          echo lambda file path: ${{ steps.build_app.outputs.LAMBDA_BUILD_FILE_PATH }}
           cd tf/ssr
           terraform init
-          terraform apply -auto-approve -var lambda_zip_path=${{ steps.build_app.outputs.LAMBDA_BUILD_FILE_PATH }} -var static_files_source=${{ steps.deploy_cdn.outputs.STATIC_FILES_CDN }}
+      - name: destroy
+        shell: bash
+        run: |
+          cd tf/ssr
+          terraform apply -auto-approve -var lambda_zip_path=${{ needs.build-app.outputs.lambda_build_file_path }} -var static_files_source=${{ needs.deploy-cdn.outputs.static_files_cdn }}
 
+  static-files-sync:
+    needs:
+      - deploy-cdn
+      - deploy-ssr
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: extractions/setup-just@v2
+      - uses: aws-actions/configure-aws-credentials@v4
+        with:
+            aws-region: ${{ vars.AWS_REGION }}
+            role-to-assume: arn:aws:iam::${{ vars.AWS_ACCOUNT_ID }}:role/${{ vars.AWS_ROLE }}
+            role-session-name: GitHubActions
       - name: sync static files
         shell: bash
-        run: just static-sync ${{ steps.deploy_cdn.outputs.STATIC_FILES_BUCKET }} ${{ steps.deploy_cdn.outputs.CLOUDFRONT_ID }}
+        run: just static-sync ${{ needs.deploy-cdn.outputs.static_files_bucket }} ${{ needs.deploy-cdn.outputs.cloudfront_id }}
