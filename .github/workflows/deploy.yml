@@ -14,106 +14,106 @@ env:
   TF_VAR_base_reference: chrispsheehan-lambda-ssr-react
 
 jobs:
-  deploy-cdn:
-    runs-on: ubuntu-latest
-    outputs:
-      static_files_bucket: ${{ steps.set_vars.outputs.STATIC_FILES_BUCKET }}
-      static_files_cdn: ${{ steps.set_vars.outputs.STATIC_FILES_CDN }}
-      cloudfront_id: ${{ steps.set_vars.outputs.CLOUDFRONT_ID }}
-    steps:
-      - uses: actions/checkout@v4
-      - uses: aws-actions/configure-aws-credentials@v4
-        with:
-            aws-region: ${{ vars.AWS_REGION }}
-            role-to-assume: arn:aws:iam::${{ vars.AWS_ACCOUNT_ID }}:role/${{ vars.AWS_ROLE }}
-            role-session-name: GitHubActions
-      - name: init
-        shell: bash
-        run: |
-          cd tf/cdn
-          terraform init
-      - name: destroy
-        shell: bash
-        run: |
-          cd tf/cdn
-          terraform apply -auto-approve
-      - name: set vars
-        id: set_vars
-        shell: bash
-        run: |
-          cd tf/cdn
-          STATIC_FILES_BUCKET=$(terraform output -raw static_files_bucket)
-          STATIC_FILES_CDN=$(terraform output -raw static_files_cdn)
-          CLOUDFRONT_ID=$(terraform output -raw cloudfront_id)
-          echo "STATIC_FILES_BUCKET=$STATIC_FILES_BUCKET" >> $GITHUB_OUTPUT
-          echo "STATIC_FILES_CDN=$STATIC_FILES_CDN" >> $GITHUB_OUTPUT
-          echo "CLOUDFRONT_ID=$CLOUDFRONT_ID" >> $GITHUB_OUTPUT
+  # deploy-cdn:
+  #   runs-on: ubuntu-latest
+  #   outputs:
+  #     static_files_bucket: ${{ steps.set_vars.outputs.STATIC_FILES_BUCKET }}
+  #     static_files_cdn: ${{ steps.set_vars.outputs.STATIC_FILES_CDN }}
+  #     cloudfront_id: ${{ steps.set_vars.outputs.CLOUDFRONT_ID }}
+  #   steps:
+  #     - uses: actions/checkout@v4
+  #     - uses: aws-actions/configure-aws-credentials@v4
+  #       with:
+  #           aws-region: ${{ vars.AWS_REGION }}
+  #           role-to-assume: arn:aws:iam::${{ vars.AWS_ACCOUNT_ID }}:role/${{ vars.AWS_ROLE }}
+  #           role-session-name: GitHubActions
+  #     - name: init
+  #       shell: bash
+  #       run: |
+  #         cd tf/cdn
+  #         terraform init
+  #     - name: destroy
+  #       shell: bash
+  #       run: |
+  #         cd tf/cdn
+  #         terraform apply -auto-approve
+  #     - name: set vars
+  #       id: set_vars
+  #       shell: bash
+  #       run: |
+  #         cd tf/cdn
+  #         STATIC_FILES_BUCKET=$(terraform output -raw static_files_bucket)
+  #         STATIC_FILES_CDN=$(terraform output -raw static_files_cdn)
+  #         CLOUDFRONT_ID=$(terraform output -raw cloudfront_id)
+  #         echo "STATIC_FILES_BUCKET=$STATIC_FILES_BUCKET" >> $GITHUB_OUTPUT
+  #         echo "STATIC_FILES_CDN=$STATIC_FILES_CDN" >> $GITHUB_OUTPUT
+  #         echo "CLOUDFRONT_ID=$CLOUDFRONT_ID" >> $GITHUB_OUTPUT
 
-  deploy-ssr:
-    needs:
-      - deploy-cdn
-    runs-on: ubuntu-latest
-    outputs:
-      lambda_build_file_path: ${{ steps.build_app.outputs.LAMBDA_BUILD_FILE_PATH }}
-      web_url: ${{ steps.set_vars.outputs.WEB_URL }}
-    steps:
-      - uses: actions/checkout@v4
-      - uses: extractions/setup-just@v2
-      - uses: aws-actions/configure-aws-credentials@v4
-        with:
-            aws-region: ${{ vars.AWS_REGION }}
-            role-to-assume: arn:aws:iam::${{ vars.AWS_ACCOUNT_ID }}:role/${{ vars.AWS_ROLE }}
-            role-session-name: GitHubActions
-      - name: build app
-        id: build_app
-        shell: bash
-        env:
-          CLIENT_PUBLIC_PATH: ${{ needs.deploy-cdn.outputs.static_files_cdn }}
-          STAGE: ${{ env.TF_VAR_environment }}
-          SHORT_SHA: $(echo $GITHUB_SHA | cut -c 1-6)
-        run: |
-          LAMBDA_BUILD_FILE_PATH=${GITHUB_WORKSPACE}/${{ env.SHORT_SHA }}.zip
-          just build $LAMBDA_BUILD_FILE_PATH
-          echo "LAMBDA_BUILD_FILE_PATH=$LAMBDA_BUILD_FILE_PATH" >> $GITHUB_OUTPUT
-      - name: init
-        shell: bash
-        run: |
-          cd tf/ssr
-          terraform init
-      - name: destroy
-        shell: bash
-        run: |
-          cd tf/ssr
-          terraform apply -auto-approve -var lambda_zip_path=${{ steps.build_app.outputs.LAMBDA_BUILD_FILE_PATH }} -var static_files_source=${{ needs.deploy-cdn.outputs.static_files_cdn }}
-      - name: set vars
-        id: set_vars
-        shell: bash
-        run: |
-          cd tf/ssr
-          WEB_URL=$(terraform output -raw web_url)
-          echo "WEB_URL=$WEB_URL" >> $GITHUB_OUTPUT
+  # deploy-ssr:
+  #   needs:
+  #     - deploy-cdn
+  #   runs-on: ubuntu-latest
+  #   outputs:
+  #     lambda_build_file_path: ${{ steps.build_app.outputs.LAMBDA_BUILD_FILE_PATH }}
+  #     web_url: ${{ steps.set_vars.outputs.WEB_URL }}
+  #   steps:
+  #     - uses: actions/checkout@v4
+  #     - uses: extractions/setup-just@v2
+  #     - uses: aws-actions/configure-aws-credentials@v4
+  #       with:
+  #           aws-region: ${{ vars.AWS_REGION }}
+  #           role-to-assume: arn:aws:iam::${{ vars.AWS_ACCOUNT_ID }}:role/${{ vars.AWS_ROLE }}
+  #           role-session-name: GitHubActions
+  #     - name: build app
+  #       id: build_app
+  #       shell: bash
+  #       env:
+  #         CLIENT_PUBLIC_PATH: ${{ needs.deploy-cdn.outputs.static_files_cdn }}
+  #         STAGE: ${{ env.TF_VAR_environment }}
+  #         SHORT_SHA: $(echo $GITHUB_SHA | cut -c 1-6)
+  #       run: |
+  #         LAMBDA_BUILD_FILE_PATH=${GITHUB_WORKSPACE}/${{ env.SHORT_SHA }}.zip
+  #         just build $LAMBDA_BUILD_FILE_PATH
+  #         echo "LAMBDA_BUILD_FILE_PATH=$LAMBDA_BUILD_FILE_PATH" >> $GITHUB_OUTPUT
+  #     - name: init
+  #       shell: bash
+  #       run: |
+  #         cd tf/ssr
+  #         terraform init
+  #     - name: destroy
+  #       shell: bash
+  #       run: |
+  #         cd tf/ssr
+  #         terraform apply -auto-approve -var lambda_zip_path=${{ steps.build_app.outputs.LAMBDA_BUILD_FILE_PATH }} -var static_files_source=${{ needs.deploy-cdn.outputs.static_files_cdn }}
+  #     - name: set vars
+  #       id: set_vars
+  #       shell: bash
+  #       run: |
+  #         cd tf/ssr
+  #         WEB_URL=$(terraform output -raw web_url)
+  #         echo "WEB_URL=$WEB_URL" >> $GITHUB_OUTPUT
 
-  file-sync:
-    needs:
-      - deploy-cdn
-      - deploy-ssr
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: extractions/setup-just@v2
-      - uses: aws-actions/configure-aws-credentials@v4
-        with:
-            aws-region: ${{ vars.AWS_REGION }}
-            role-to-assume: arn:aws:iam::${{ vars.AWS_ACCOUNT_ID }}:role/${{ vars.AWS_ROLE }}
-            role-session-name: GitHubActions
-      - name: sync static files
-        shell: bash
-        run: just static-sync ${{ needs.deploy-cdn.outputs.static_files_bucket }} ${{ needs.deploy-cdn.outputs.cloudfront_id }}
+  # file-sync:
+  #   needs:
+  #     - deploy-cdn
+  #     - deploy-ssr
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - uses: actions/checkout@v4
+  #     - uses: extractions/setup-just@v2
+  #     - uses: aws-actions/configure-aws-credentials@v4
+  #       with:
+  #           aws-region: ${{ vars.AWS_REGION }}
+  #           role-to-assume: arn:aws:iam::${{ vars.AWS_ACCOUNT_ID }}:role/${{ vars.AWS_ROLE }}
+  #           role-session-name: GitHubActions
+  #     - name: sync static files
+  #       shell: bash
+  #       run: just static-sync ${{ needs.deploy-cdn.outputs.static_files_bucket }} ${{ needs.deploy-cdn.outputs.cloudfront_id }}
   
   test:
-    needs:
-      - deploy-ssr
-      - file-sync
+    # needs:
+    #   - deploy-ssr
+    #   - file-sync
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -125,5 +125,7 @@ jobs:
       - name: test
         shell: bash
         env:
-          BASE_URL: ${{ needs.deploy-ssr.outputs.web_url }}
+          STAGE: ${{ env.TF_VAR_environment }}
+          # BASE_URL: ${{ needs.deploy-ssr.outputs.web_url }}
+          BASE_URL: "https://fl4xctw7hb.execute-api.eu-west-2.amazonaws.com/dev/"
         run: npx playwright test
