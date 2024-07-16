@@ -44,6 +44,7 @@ const babelLoader = {
                   sourceMap: true
               }
           },
+          'style-loader',
           'sass-loader',
           'postcss-loader'
       ],
