@@ -1,26 +1,33 @@
 # lambda-ssr-react-app
 
+A ReactJS SSR app hosted in AWS.
+
 ### Inspiration
 
 - https://www.youtube.com/watch?v=LRohAW0WYZM
 - https://wittcode.com/blogs/server-side-rendering-react-with-express
-- https://docs.aws.amazon.com/amplify/latest/userguide/server-side-rendering-amplify.html
+- https://aws.amazon.com/blogs/compute/building-server-side-rendering-for-react-in-aws-lambda
 - https://react.dev/reference/react-dom/server
 
 ## Run Locally
 
-- Live load changes to `/src` and `/tests`
-- Run `/tests` on every change
+- Live load changes to `/src` and `/tests`. Runs `/tests` on every change.
+- Runs in `docker-compose` using `.env.docker` environmental variables.
 
 ```sh
 just run
 ```
 
+## Debug Locally
+
+- 
+
 ## Deploy
 
-- Run `Deploy Environment` in Github Actions
+- Run `Deploy Environment` in Github Actions.
+  - or cd into `tf/cdn` and `tf/ssr` to deploy manually.
 
-- Required aws permissions
+- Required aws permissions below.
 
 ```json
 [
@@ -34,6 +41,8 @@ just run
 ```
 
 ## lambda test payload
+
+- Enter the below into the lambda test console to simulate api calls.
 
 ```json
 {
