@@ -20,7 +20,11 @@ just run
 
 ## Debug Locally
 
-- 
+- Create `.env` file as per values found in `.env.local`.
+
+```sh
+npm run start:dev
+```
 
 ## Deploy
 

@@ -85,7 +85,7 @@ jobs:
           cd tf/ssr
           terraform apply -auto-approve -var lambda_zip_path=${{ steps.build_app.outputs.LAMBDA_BUILD_FILE_PATH }} -var static_files_source=${{ needs.deploy-cdn.outputs.static_files_cdn }}
 
-  static-files-sync:
+  file-sync:
     needs:
       - deploy-cdn
       - deploy-ssr
