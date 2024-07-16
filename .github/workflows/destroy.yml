@@ -52,11 +52,11 @@ jobs:
       - name: init
         shell: bash
         run: |
-          cd tf/cdn
+          cd tf/ssr
           terraform init
 
       - name: destroy
         shell: bash
         run: |
-          cd tf/cdn
+          cd tf/ssr
           terraform destroy -auto-approve --var lambda_zip_path=/no.zip -var static_files_source=blh.com
