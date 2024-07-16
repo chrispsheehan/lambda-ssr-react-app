@@ -14,30 +14,49 @@ env:
   TF_VAR_base_reference: chrispsheehan-lambda-ssr-react
 
 jobs:
-  destroy:
+  destroy-ssr:
     runs-on: ubuntu-latest
     steps:
-      - name: checkout
-        uses: actions/checkout@v4
-
+      - uses: actions/checkout@v4
       - uses: extractions/setup-just@v2
-
       - uses: aws-actions/configure-aws-credentials@v4
         with:
             aws-region: ${{ vars.AWS_REGION }}
             role-to-assume: arn:aws:iam::${{ vars.AWS_ACCOUNT_ID }}:role/${{ vars.AWS_ROLE }}
             role-session-name: GitHubActions
 
-      - name: destroy cdn
+      - name: init
         shell: bash
         run: |
           cd tf/cdn
           terraform init
-          terraform destroy -auto-approve
 
-      - name: destroy ssr
+      - name: destroy
         shell: bash
         run: |
-          cd tf/ssr
+          cd tf/cdn
+          terraform destroy -auto-approve
+
+  destroy-cdn:
+    needs: destroy-ssr
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: extractions/setup-just@v2
+      - uses: aws-actions/configure-aws-credentials@v4
+        with:
+            aws-region: ${{ vars.AWS_REGION }}
+            role-to-assume: arn:aws:iam::${{ vars.AWS_ACCOUNT_ID }}:role/${{ vars.AWS_ROLE }}
+            role-session-name: GitHubActions
+
+      - name: init
+        shell: bash
+        run: |
+          cd tf/cdn
           terraform init
+
+      - name: destroy
+        shell: bash
+        run: |
+          cd tf/cdn
           terraform destroy -auto-approve --var lambda_zip_path=/no.zip -var static_files_source=blh.com
