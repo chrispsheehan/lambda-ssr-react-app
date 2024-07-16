@@ -1,7 +1,7 @@
 import { config } from "dotenv";
 config();
 
-import express from 'express';
+import express, { NextFunction, Request, Response } from 'express';
 import { StaticRouter } from 'react-router-dom/server';
 import ReactDOMServer from 'react-dom/server';
 import App from '../client/components/App';
@@ -37,7 +37,7 @@ console.log(`STATIC_SOURCE: ${staticSource}`);
 
 const publicPath = `/${stage}/public`;
 
-app.use((req, res, next) => {
+app.use((req: Request, res: Response, next: NextFunction) => {
   console.log(`Request received: ${req.method} ${req.url}`);
   next();
 });
@@ -59,7 +59,7 @@ switch (appEnv) {
     throw new Error('Invalid APP_ENV value');
 }
 
-app.get(`/${stage}/*`, async (req, res) => {
+app.get(`/${stage}/*`, async (req: Request, res: Response) => {
   try {
     const indexHtml = await createReactApp(req.url);
     res.setHeader('Content-Type', 'text/html; charset=utf-8');
@@ -71,7 +71,7 @@ app.get(`/${stage}/*`, async (req, res) => {
 });
 
 // Fallback route for any other routes not explicitly handled
-app.all('*', (req, res) => {
+app.all('*', (req: Request, res: Response) => {
   console.log(`***ROUTE NOT SUPPORTED*** ${req.method}: ${req.url}`);
   res.status(404).send('Route not supported');
 });
