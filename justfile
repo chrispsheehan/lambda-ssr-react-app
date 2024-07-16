@@ -17,8 +17,10 @@ _environment:
 build build_file_path:
     #!/usr/bin/env bash
     rm -f {{build_file_path}}
-    npm i --production
+    npm i
     npm run build
+    rm -rf {{justfile_directory()}}/node_modules
+    npm i --omit=dev
     zip -r {{build_file_path}} dist node_modules > /dev/null
 
 run:
