@@ -27,6 +27,10 @@ run:
     #!/usr/bin/env bash
     docker-compose up --build
 
+debug:
+    #!/usr/bin/env bash
+    npm run start:dev
+
 static-sync bucket cloudfront_id:
     #!/usr/bin/env bash
     aws s3 sync {{justfile_directory()}}/public/assets s3://{{bucket}}/public/assets --delete
