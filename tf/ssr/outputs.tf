@@ -1,3 +1,3 @@
 output "web_url" {
-  value = aws_apigatewayv2_stage.this[0].invoke_url
+  value = aws_cloudfront_distribution.this.domain_name
 }
