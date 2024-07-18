@@ -37,12 +37,23 @@ resource "aws_lambda_function" "render" {
   memory_size = 256
   timeout     = 10
 
+  publish = true
+
   environment {
     variables = {
       APP_ENV       = "production",
       STAGE         = var.environment,
       STATIC_SOURCE = var.static_files_source
     }
+  }
+}
+
+resource "aws_lambda_alias" "latest" {
+  name             = "${local.ssr_reference}-latest"
+  function_name    = aws_lambda_function.render.function_name
+  function_version = data.aws_lambda_function.latest.version
+  lifecycle {
+    create_before_destroy = true
   }
 }
 
@@ -91,7 +102,7 @@ resource "aws_cloudfront_distribution" "this" {
 
     lambda_function_association {
       event_type   = "origin-request"
-      lambda_arn   = aws_lambda_function.render.qualified_arn
+      lambda_arn   = aws_lambda_alias.latest.arn
       include_body = false
     }
   }

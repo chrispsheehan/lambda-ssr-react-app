@@ -20,3 +20,8 @@ data "aws_iam_policy_document" "s3_access_policy" {
     resources = ["arn:aws:s3:::${aws_s3_bucket.ssr_code_bucket.bucket}/*"]
   }
 }
+
+data "aws_lambda_function" "latest" {
+  depends_on = [ aws_lambda_function.render ]
+  function_name = aws_lambda_function.render.function_name
+}
