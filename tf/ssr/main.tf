@@ -51,6 +51,12 @@ resource "aws_iam_role" "lambda_execution_role" {
   assume_role_policy = data.aws_iam_policy_document.api_lambda_assume_role.json
 }
 
+resource "aws_iam_role_policy" "s3_access_policy" {
+  name   = "${local.ssr_reference}-s3-access-policy"
+  role   = aws_iam_role.lambda_execution_role.id
+  policy = data.aws_iam_policy_document.s3_access_policy.json
+}
+
 resource "aws_lambda_permission" "this" {
   statement_id  = "${local.ssr_reference}-allow-api-gateway-invoke"
   action        = "lambda:InvokeFunction"
