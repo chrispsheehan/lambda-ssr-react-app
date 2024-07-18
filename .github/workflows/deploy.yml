@@ -80,7 +80,7 @@ jobs:
         run: |
           cd tf/ssr
           terraform init
-      - name: destroy
+      - name: deploy
         shell: bash
         run: |
           cd tf/ssr
