@@ -9,6 +9,22 @@ resource "aws_s3_object" "ssr_code_zip" {
   force_destroy = true
 }
 
+resource "aws_s3_bucket_ownership_controls" "static_files" {
+  depends_on = [aws_s3_bucket.ssr_code_bucket]
+  bucket     = aws_s3_bucket.ssr_code_bucket.id
+  rule {
+    object_ownership = "BucketOwnerEnforced"
+  }
+}
+
+resource "aws_cloudfront_origin_access_control" "oac" {
+  name                              = "oac-${local.ssr_reference}"
+  description                       = "OAC Policy for ${local.ssr_reference}"
+  origin_access_control_origin_type = "s3"
+  signing_behavior                  = "always"
+  signing_protocol                  = "sigv4"
+}
+
 resource "aws_lambda_function" "render" {
   function_name = local.ssr_reference
   handler       = "dist/server.handler"
@@ -45,15 +61,9 @@ resource "aws_lambda_permission" "this" {
 
 resource "aws_cloudfront_distribution" "this" {
   origin {
-    domain_name = local.ssr_reference
-    origin_id   = local.ssr_reference
-
-    custom_origin_config {
-      http_port              = 80
-      https_port             = 443
-      origin_protocol_policy = "https-only"
-      origin_ssl_protocols   = ["TLSv1.2"]
-    }
+    domain_name              = aws_s3_bucket.ssr_code_bucket.bucket_regional_domain_name
+    origin_id                = aws_s3_bucket.ssr_code_bucket.bucket_regional_domain_name
+    origin_access_control_id = aws_cloudfront_origin_access_control.oac.id
   }
 
   enabled             = true
