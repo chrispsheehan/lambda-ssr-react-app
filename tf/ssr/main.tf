@@ -48,6 +48,12 @@ resource "aws_lambda_function" "render" {
   }
 }
 
+resource "aws_lambda_alias" "render_alias" {
+  name             = "live"
+  function_name    = aws_lambda_function.render.function_name
+  function_version = aws_lambda_function.render.version
+}
+
 resource "aws_iam_role" "lambda_execution_role" {
   name               = "${local.ssr_reference}-lambda-execution-role"
   assume_role_policy = data.aws_iam_policy_document.api_lambda_assume_role.json
@@ -93,7 +99,7 @@ resource "aws_cloudfront_distribution" "this" {
 
     lambda_function_association {
       event_type   = "origin-request"
-      lambda_arn   = aws_lambda_function.render.version
+      lambda_arn   = aws_lambda_alias.render_alias.arn
       include_body = false
     }
   }
