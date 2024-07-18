@@ -99,7 +99,7 @@ resource "aws_cloudfront_distribution" "this" {
 
     lambda_function_association {
       event_type   = "origin-request"
-      lambda_arn   = aws_lambda_alias.render_alias.arn
+      lambda_arn   = data.aws_lambda_function.render_latest.arn
       include_body = false
     }
   }

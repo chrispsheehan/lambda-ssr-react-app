@@ -1,5 +1,9 @@
 data "aws_caller_identity" "current" {}
 
+data "aws_lambda_function" "render_latest" {
+  function_name = aws_lambda_function.render.function_name
+}
+
 data "aws_iam_policy_document" "api_lambda_assume_role" {
   version = "2012-10-17"
 
