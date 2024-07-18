@@ -68,7 +68,7 @@ resource "aws_iam_role_policy" "s3_access_policy" {
 resource "aws_lambda_permission" "this" {
   statement_id  = "${local.ssr_reference}-allow-api-gateway-invoke"
   action        = "lambda:InvokeFunction"
-  function_name = aws_lambda_function.render.function_name
+  function_name = aws_lambda_alias.render_alias.arn
   principal     = "edgelambda.amazonaws.com"
   source_arn    = aws_cloudfront_distribution.this.arn
 }
