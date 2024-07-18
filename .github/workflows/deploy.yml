@@ -32,7 +32,7 @@ jobs:
         run: |
           cd tf/cdn
           terraform init
-      - name: destroy
+      - name: deploy
         shell: bash
         run: |
           cd tf/cdn
