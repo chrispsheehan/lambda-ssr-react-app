@@ -92,31 +92,13 @@ jobs:
           cd tf/ssr
           WEB_URL=$(terraform output -raw web_url)
           echo "WEB_URL=$WEB_URL" >> $GITHUB_OUTPUT
-
-  file-sync:
-    needs:
-      - deploy-cdn
-      - deploy-ssr
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: extractions/setup-just@v2
-      - uses: aws-actions/configure-aws-credentials@v4
-        with:
-            aws-region: ${{ vars.AWS_REGION }}
-            role-to-assume: arn:aws:iam::${{ vars.AWS_ACCOUNT_ID }}:role/${{ vars.AWS_ROLE }}
-            role-session-name: GitHubActions
-      - name: build static files
-        shell: bash
-        run: npm run build
       - name: sync static files
         shell: bash
         run: just static-sync ${{ needs.deploy-cdn.outputs.static_files_bucket }} ${{ needs.deploy-cdn.outputs.cloudfront_id }}
-  
+
   test:
     needs:
       - deploy-ssr
-      - file-sync
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
