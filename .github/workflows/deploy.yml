@@ -106,6 +106,9 @@ jobs:
             aws-region: ${{ vars.AWS_REGION }}
             role-to-assume: arn:aws:iam::${{ vars.AWS_ACCOUNT_ID }}:role/${{ vars.AWS_ROLE }}
             role-session-name: GitHubActions
+      - name: build static files
+        shell: bash
+        run: npm run build
       - name: sync static files
         shell: bash
         run: just static-sync ${{ needs.deploy-cdn.outputs.static_files_bucket }} ${{ needs.deploy-cdn.outputs.cloudfront_id }}
