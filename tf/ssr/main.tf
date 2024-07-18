@@ -1,5 +1,5 @@
 resource "aws_s3_bucket" "ssr_code_bucket" {
-  bucket = "${local.ssr_reference}-ssr-code"
+  bucket = "${data.aws_caller_identity.current.account_id}-${local.ssr_reference}-ssr-code"
 }
 
 resource "aws_s3_object" "ssr_code_zip" {

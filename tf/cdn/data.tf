@@ -1,3 +1,4 @@
+data "aws_caller_identity" "current" {}
 data "aws_iam_policy_document" "static_files_policy" {
   version = "2012-10-17"
 

@@ -1,5 +1,5 @@
 resource "aws_s3_bucket" "static_files" {
-  bucket        = "${local.static_reference}-files"
+  bucket        = "${data.aws_caller_identity.current.account_id}-${local.static_reference}-files"
   force_destroy = true
 }
 
