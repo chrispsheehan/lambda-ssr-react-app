@@ -77,7 +77,7 @@ resource "aws_cloudfront_distribution" "this" {
   default_root_object = "index.html"
 
   default_cache_behavior {
-    target_origin_id       = local.ssr_reference
+    target_origin_id       = aws_s3_bucket.ssr_code_bucket.bucket_regional_domain_name
     viewer_protocol_policy = "redirect-to-https"
     allowed_methods        = ["GET", "HEAD"]
     cached_methods         = ["GET", "HEAD"]
