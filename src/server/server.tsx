@@ -52,7 +52,7 @@ switch (appEnv) {
     break;
 
   case 'production':
-    app.use(`${publicPath}/static`, retrieveFileFromCloudFront(staticSource));
+    app.use(`${publicPath}/static`, retrieveFileFromCloudFront(`${staticSource}/static`));
     break;
 
   default:
@@ -85,6 +85,7 @@ app.all('*', (req: Request, res: Response) => {
  */
 const createReactApp = async (location: string | Partial<Location<any>>) => {
   const indexFileRef = "static/index.html";
+  const scriptPath = `${stage}/public/static/client.js`;
   const faviconFileRef = "assets/favicon.ico";
   const stylesCSSFileRef = "assets/styles/styles.scss";
 
@@ -105,7 +106,7 @@ const createReactApp = async (location: string | Partial<Location<any>>) => {
     }
     html = response.data;
     faviconPath = `${staticSource}/${faviconFileRef}`;
-    scssPath = `${staticSource}/${stylesCSSFileRef}`
+    scssPath = `${staticSource}/${stylesCSSFileRef}`;
   } else {
     const indexPath = path.resolve(staticDir, indexFileRef);
     html = await fs.promises.readFile(indexPath, 'utf-8');
@@ -116,6 +117,7 @@ const createReactApp = async (location: string | Partial<Location<any>>) => {
   const reactHtml = html.replace(
     '<div id="root"><main><div>Loading App...</div></main></div>', `<div id="root">${reactApp}</div>`)
     .replace('{{FAVICON_PATH}}', faviconPath)
+    .replace('{{SCRIPT_PATH}}', scriptPath)
     .replace('{{STYLE_CSS_PATH}}', scssPath);
   return reactHtml;
 };
