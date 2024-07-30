@@ -2,6 +2,12 @@
 
 A ReactJS SSR app hosted in AWS.
 
+## Overview
+
+Render SSR app on the client side via an AWS Lambda function. Commonly used to increase SEO scores. This approach could also abstract back end API interactions away from the client side - think authentication.
+
+Cloudfront is used to host the initial index.html as well as other static assets.
+
 ### Inspiration
 
 - https://www.youtube.com/watch?v=LRohAW0WYZM
