@@ -10,8 +10,8 @@ Cloudfront is used to host the initial index.html as well as other static assets
 
 ### Inspiration
 
-- https://www.youtube.com/watch?v=LRohAW0WYZM
 - https://wittcode.com/blogs/server-side-rendering-react-with-express
+- http://expressjs.com/en/starter/static-files.html#serving-static-files-in-express
 - https://aws.amazon.com/blogs/compute/building-server-side-rendering-for-react-in-aws-lambda
 - https://react.dev/reference/react-dom/server
 
