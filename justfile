@@ -27,15 +27,16 @@ run:
     #!/usr/bin/env bash
     docker-compose up --build
 
-debug:
+file-sync bucket:
     #!/usr/bin/env bash
-    npm run start:dev
+    aws s3 sync {{justfile_directory()}}/public/assets s3://{{bucket}}/public/assets --delete
+    aws s3 cp s3://{{bucket}}/public/assets/styles/styles.scss s3://{{bucket}}/public/assets/styles/styles.scss --content-type "text/css" --metadata-directive REPLACE
+    aws s3 sync {{justfile_directory()}}/public/static s3://{{bucket}}/public/static --delete --exact-timestamps
 
 static-sync bucket cloudfront_id:
     #!/usr/bin/env bash
-    aws s3 sync {{justfile_directory()}}/public/assets s3://{{bucket}}/public/assets --delete
-    aws s3 sync {{justfile_directory()}}/public/static s3://{{bucket}}/public/static --delete --exact-timestamps
-    aws cloudfront create-invalidation --distribution-id {{cloudfront_id}} --paths "/public/static/*"
+    just file-sync {{bucket}}
+    aws cloudfront create-invalidation --distribution-id {{cloudfront_id}} --paths "/public/*"
 
 check:
     #!/usr/bin/env bash
