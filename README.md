@@ -15,6 +15,18 @@ Cloudfront is used to host the initial index.html as well as other static assets
 - https://aws.amazon.com/blogs/compute/building-server-side-rendering-for-react-in-aws-lambda
 - https://react.dev/reference/react-dom/server
 
+## Environment Variables
+
+`PORT`: Port to expose app on localhost. Used locally only.
+
+`STAGE`: Base path of app. Must match api gateway stage in AWS.
+
+`APP_ENV`: `production` | `local` | `docker` are supported.
+
+`STATIC_SOURCE`: Path for static assets. Local file directory or cloudfront domain.
+
+`CLIENT_PUBLIC_PATH`: Path above assets are accessed with on the client side.
+
 ## Run Locally
 
 - Live load changes to `/src` and `/tests`. Runs `/tests` on every change.
@@ -54,7 +66,7 @@ just debug
 
 ## lambda test payload
 
-- Enter the below into the lambda test console to simulate api calls.
+- Enter the below into the lambda test console to simulate api calls directed to it from the API Gateway.
 
 ```json
 {
