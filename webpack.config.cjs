@@ -58,7 +58,7 @@ const resolve = {
 
 const serverConfig = {
   target: 'node',
-  mode: 'development',
+  mode: 'development', /// change to production?
   entry: './src/server/server.tsx',
   output: {
     path: path.join(__dirname, 'dist'),
@@ -77,15 +77,13 @@ const serverConfig = {
   watchOptions,
 };
 
-const publicPath = process.env.CLIENT_PUBLIC_PATH;
-
 const clientConfig = {
   target: 'web',
-  mode: 'development',
+  mode: 'development', /// change to production?
   entry: './src/client/index.tsx',
   output: {
     path: path.join(__dirname, 'public/static'),
-    publicPath: `${publicPath}/static`,
+    publicPath: `/public/static`, /// leading slash for resolves to the correct location regardless of the route
     filename: 'client.js',
   },
   module: babelLoader,

@@ -35,7 +35,7 @@ console.log(`STAGE: ${stage}`);
 console.log(`APP_ENV: ${appEnv}`);
 console.log(`STATIC_SOURCE: ${staticSource}`);
 
-const publicPath = `/${stage}/public`;
+const publicPath = `${stage}/public`;
 
 app.use((req: Request, res: Response, next: NextFunction) => {
   console.log(`Request received: ${req.method} ${req.url}`);
@@ -46,9 +46,9 @@ switch (appEnv) {
   case 'local':
   case 'docker':
     staticDir = path.resolve(__dirname, staticSource);
-    app.use(`${publicPath}/static`, express.static(path.resolve(staticDir, 'static')));
-    app.use(`${publicPath}/assets`, express.static(path.resolve(staticDir, 'assets')));
-    app.use(`${publicPath}/assets/styles`, express.static(path.resolve(staticDir, 'assets/styles')));
+    app.use(`/public/static`, express.static(path.resolve(staticDir, 'static')));
+    app.use(`/public/assets`, express.static(path.resolve(staticDir, 'assets')));
+    app.use(`/public/assets/styles`, express.static(path.resolve(staticDir, 'assets/styles')));
     break;
 
   case 'production':
@@ -59,7 +59,7 @@ switch (appEnv) {
     throw new Error('Invalid APP_ENV value');
 }
 
-app.get(`/${stage}/*`, async (req: Request, res: Response) => {
+app.get(`/*`, async (req: Request, res: Response) => {
   try {
     const indexHtml = await createReactApp(req.url);
     res.setHeader('Content-Type', 'text/html; charset=utf-8');
@@ -89,7 +89,7 @@ const createReactApp = async (location: string | Partial<Location<any>>) => {
   const stylesCSSFileRef = "assets/styles/styles.scss";
 
   const reactApp = ReactDOMServer.renderToString(
-    <StaticRouter location={location} basename={`/${stage}`}>
+    <StaticRouter location={location} basename={`${stage}`}>
       <App />
     </StaticRouter>
   );
@@ -123,7 +123,7 @@ const createReactApp = async (location: string | Partial<Location<any>>) => {
 // For local testing
 if (port) {
   app.listen(port, () => {
-    console.log(`App started: http://localhost:${port}/${stage}/home`);
+    console.log(`App started: http://localhost:${port}${stage}home`);
   });
 }
 
