@@ -21,6 +21,7 @@ const getEnvVar = (varName: string): string => {
 }
 
 const port: string | undefined = process.env.PORT;
+const appEnv: string = getEnvVar('APP_ENV');
 const publicPath: string = getEnvVar('PUBLIC_PATH');
 const basePath: string = getEnvVar('BASE_PATH');
 const staticSource: string = getEnvVar('STATIC_SOURCE');
@@ -29,6 +30,7 @@ const staticDir = path.resolve(__dirname, staticSource);
 
 const app = express();
 
+console.log(`APP_ENV: ${appEnv}`);
 console.log(`PUBLIC_PATH: ${publicPath}`);
 console.log(`BASE_PATH: ${basePath}`);
 console.log(`STATIC_SOURCE: ${staticSource}`);
@@ -38,7 +40,15 @@ app.use((req: Request, res: Response, next: NextFunction) => {
   next();
 });
 
-app.use(publicPath, express.static(staticDir));
+
+switch (appEnv) {
+  case 'local':
+  case 'docker':
+    app.use(publicPath, express.static(staticDir));
+    break;
+  default:
+    console.log("Non-local environment detected. Static routing handled in CDN.")
+}
 
 app.get(`/*`, async (req: Request, res: Response) => {
   try {
