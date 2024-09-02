@@ -26,7 +26,7 @@ const babelLoader = {
         options: {
           presets: [
             '@babel/preset-env',
-            ['@babel/preset-react', { 'runtime': 'automatic' }],
+            ['@babel/preset-react', { runtime: 'automatic' }],
             '@babel/preset-typescript'
           ]
         }
@@ -44,7 +44,6 @@ const babelLoader = {
                   sourceMap: true
               }
           },
-          'style-loader',
           'sass-loader',
           'postcss-loader'
       ],
@@ -58,7 +57,7 @@ const resolve = {
 
 const serverConfig = {
   target: 'node',
-  mode: 'development', /// change to production?
+  mode: 'development', // change to production for production build
   entry: './src/server/server.tsx',
   output: {
     path: path.join(__dirname, 'dist'),
@@ -66,11 +65,7 @@ const serverConfig = {
   },
   module: babelLoader,
   plugins: [
-    new CopyWebpackPlugin({
-      patterns: [
-        { from: 'src/client/index.html', to: 'index.html' }
-      ]
-    }),
+    // Remove the CopyWebpackPlugin that copies index.html here
   ],
   ignoreWarnings: [/Critical dependency: the request of a dependency is an expression/],
   resolve,
@@ -79,23 +74,25 @@ const serverConfig = {
 
 const clientConfig = {
   target: 'web',
-  mode: 'development', /// change to production?
+  mode: 'development', // change to production for production build
   entry: './src/client/index.tsx',
   output: {
     path: path.join(__dirname, 'public/static'),
-    publicPath: `/public/static`, /// leading slash for resolves to the correct location regardless of the route
+    publicPath: `/public/static`, // leading slash for resolves to the correct location regardless of the route
     filename: 'client.js',
   },
   module: babelLoader,
   plugins: [
     new HtmlWebpackPlugin({
-      template: `${__dirname}/src/client/index.html`
+      template: `${__dirname}/src/client/index.html`, // use the source HTML file
+      filename: path.join(__dirname, 'dist', 'index.html'), // output to dist folder
+      inject: 'body', // inject the client.js script at the end of the body tag
     }),
     new webpack.DefinePlugin({
       'process.env.STAGE': JSON.stringify(process.env.STAGE),
     }),
     new MiniCssExtractPlugin({
-      filename: 'styles.scss'
+      filename: 'styles.css' // ensure this is a .css file
     }),
     new CopyWebpackPlugin({
       patterns: [
