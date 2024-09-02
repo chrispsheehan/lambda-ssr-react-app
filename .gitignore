@@ -8,8 +8,8 @@ build
 *lock.json
 *zip
 
-/tf/*/.terraform/
-/tf/*/.terraform.lock.hcl
+.terraform
+*.terraform.lock.hcl
 
 *.zip
 *.DS_Store
