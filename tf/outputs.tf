@@ -9,3 +9,7 @@ output "static_files_cdn" {
 output "cloudfront_id" {
   value = aws_cloudfront_distribution.distribution.id
 }
+
+output "web_url" {
+  value = aws_apigatewayv2_stage.this[0].invoke_url
+}
