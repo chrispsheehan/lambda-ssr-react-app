@@ -72,13 +72,15 @@ const serverConfig = {
   watchOptions,
 };
 
+const publicPath = process.env.PUBLIC_PATH; //must have leading slash
+
 const clientConfig = {
   target: 'web',
   mode: 'development', // change to production for production build
   entry: './src/client/index.tsx',
   output: {
     path: path.join(__dirname, 'public/static'),
-    publicPath: `/public/static`, // leading slash for resolves to the correct location regardless of the route
+    publicPath: `${publicPath}/static`, // leading slash for resolves to the correct location regardless of the route
     filename: 'client.js',
   },
   module: babelLoader,
@@ -89,7 +91,7 @@ const clientConfig = {
       inject: 'body', // inject the client.js script at the end of the body tag
     }),
     new webpack.DefinePlugin({
-      'process.env.STAGE': JSON.stringify(process.env.STAGE),
+      'process.env.BASE_PATH': JSON.stringify(process.env.BASE_PATH),
     }),
     new MiniCssExtractPlugin({
       filename: 'styles.css' // ensure this is a .css file
