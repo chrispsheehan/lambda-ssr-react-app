@@ -40,8 +40,8 @@ resource "aws_cloudfront_distribution" "distribution" {
   comment = "${local.reference}-distribution"
 
   origin {
-    domain_name              = local.static_origin
-    origin_id                = aws_s3_bucket.static_files.bucket_regional_domain_name
+    domain_name              = aws_s3_bucket.static_files.bucket_regional_domain_name
+    origin_id                = local.static_origin
     origin_access_control_id = aws_cloudfront_origin_access_control.oac.id
   }
 

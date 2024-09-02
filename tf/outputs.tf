@@ -7,5 +7,5 @@ output "cloudfront_id" {
 }
 
 output "web_url" {
-  value = aws_cloudfront_distribution.distribution.domain_name
+  value = "https://${aws_cloudfront_distribution.distribution.domain_name}"
 }
