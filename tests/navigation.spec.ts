@@ -1,22 +1,22 @@
 import { test, expect } from '@playwright/test';
 
-const stage = process.env.STAGE;
+const basePath = process.env.BASE_PATH;
 
 const urls = [{
-  url: `${stage}/`,
+  url: `${basePath}default`,
   title: "This is the home page"
 },
 {
-  url: `${stage}/about`,
+  url: `${basePath}about`,
   title: "About Page"
 },
 {
-  url: `${stage}/home`,
+  url: `${basePath}home`,
   title: "This is the home page"
 }];
 
 for (const url of urls) {
-  test(`/${url.url} has title ${url.title}`, async ({ page }) => {
+  test(`${url.url} has title ${url.title}`, async ({ page }) => {
     await page.goto(url.url);
     await page.reload();
     await expect(page).toHaveTitle('SSR');

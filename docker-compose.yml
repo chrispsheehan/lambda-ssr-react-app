@@ -24,7 +24,7 @@ services:
     depends_on:
       ssr-web:
         condition: service_healthy
-    image: mcr.microsoft.com/playwright
+    image: mcr.microsoft.com/playwright:v1.46.1-jammy
     env_file: .env.docker
     container_name: ssr-test
     volumes:

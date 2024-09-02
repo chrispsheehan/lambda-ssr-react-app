@@ -3,14 +3,14 @@ import { hydrateRoot } from 'react-dom/client';
 import { BrowserRouter } from 'react-router-dom';
 import App from './components/App';
 
-const stage = process.env.STAGE;
+const basePath = process.env.BASE_PATH;
 
 const rootElement = document.getElementById('root');
 if (rootElement) {
   hydrateRoot(
     rootElement,
     <React.StrictMode>
-      <BrowserRouter basename={`/${stage}`}>
+      <BrowserRouter basename={`${basePath}`}>
         <App />
       </BrowserRouter>
     </React.StrictMode>

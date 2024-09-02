@@ -9,10 +9,8 @@ import fs from 'fs';
 import path from 'path';
 import { Location } from 'react-router-dom';
 import React from 'react';
-import axios from "axios";
 import awsServerlessExpress from 'aws-serverless-express';
 import { APIGatewayProxyEvent, Context } from "aws-lambda";
-import retrieveFileFromCloudFront from './cloudfront';
 
 const getEnvVar = (varName: string): string => {
   const value = process.env[varName];
@@ -23,43 +21,36 @@ const getEnvVar = (varName: string): string => {
 }
 
 const port: string | undefined = process.env.PORT;
-const stage: string = getEnvVar('STAGE');
 const appEnv: string = getEnvVar('APP_ENV');
+const publicPath: string = getEnvVar('PUBLIC_PATH');
+const basePath: string = getEnvVar('BASE_PATH');
 const staticSource: string = getEnvVar('STATIC_SOURCE');
 
-var staticDir: string;
+const staticDir = path.resolve(__dirname, staticSource);
 
 const app = express();
 
-console.log(`STAGE: ${stage}`);
 console.log(`APP_ENV: ${appEnv}`);
+console.log(`PUBLIC_PATH: ${publicPath}`);
+console.log(`BASE_PATH: ${basePath}`);
 console.log(`STATIC_SOURCE: ${staticSource}`);
-
-const publicPath = `/${stage}/public`;
 
 app.use((req: Request, res: Response, next: NextFunction) => {
   console.log(`Request received: ${req.method} ${req.url}`);
   next();
 });
 
+
 switch (appEnv) {
   case 'local':
   case 'docker':
-    staticDir = path.resolve(__dirname, staticSource);
-    app.use(`${publicPath}/static`, express.static(path.resolve(staticDir, 'static')));
-    app.use(`${publicPath}/assets`, express.static(path.resolve(staticDir, 'assets')));
-    app.use(`${publicPath}/assets/styles`, express.static(path.resolve(staticDir, 'assets/styles')));
+    app.use(publicPath, express.static(staticDir));
     break;
-
-  case 'production':
-    app.use(`${publicPath}/static`, retrieveFileFromCloudFront(`${staticSource}/static`));
-    break;
-
   default:
-    throw new Error('Invalid APP_ENV value');
+    console.log("Non-local environment detected. Static routing handled in CDN.")
 }
 
-app.get(`/${stage}/*`, async (req: Request, res: Response) => {
+app.get(`/*`, async (req: Request, res: Response) => {
   try {
     const indexHtml = await createReactApp(req.url);
     res.setHeader('Content-Type', 'text/html; charset=utf-8');
@@ -84,46 +75,25 @@ app.all('*', (req: Request, res: Response) => {
  * @return {string}
  */
 const createReactApp = async (location: string | Partial<Location<any>>) => {
-  const indexFileRef = "static/index.html";
-  const faviconFileRef = "assets/favicon.ico";
-  const stylesCSSFileRef = "assets/styles/styles.scss";
+  const indexPath = path.resolve(__dirname, "index.html");
 
   const reactApp = ReactDOMServer.renderToString(
-    <StaticRouter location={location} basename={`/${stage}`}>
+    <StaticRouter location={location} basename={`${basePath}`}>
       <App />
     </StaticRouter>
   );
 
   let html: string;
-  let faviconPath: string;
-  let scssPath: string;
-  if (appEnv === 'production') {
-    const indexPath = `${staticSource}/${indexFileRef}`;
-    const response = await axios.get(indexPath);
-    if (response.status !== 200) {
-      throw new Error('Failed to fetch index.html from CloudFront');
-    }
-    html = response.data;
-    faviconPath = `${staticSource}/${faviconFileRef}`;
-    scssPath = `${staticSource}/${stylesCSSFileRef}`;
-  } else {
-    const indexPath = path.resolve(staticDir, indexFileRef);
-    html = await fs.promises.readFile(indexPath, 'utf-8');
-    faviconPath = `${publicPath}/${faviconFileRef}`;
-    scssPath = `${publicPath}/${stylesCSSFileRef}`
-  }
-
+  html = await fs.promises.readFile(indexPath, 'utf-8');
   const reactHtml = html.replace(
-    '<div id="root"><main><div>Loading App...</div></main></div>', `<div id="root">${reactApp}</div>`)
-    .replace('{{FAVICON_PATH}}', faviconPath)
-    .replace('{{STYLE_CSS_PATH}}', scssPath);
+    '<div id="root"><main><div>Loading App...</div></main></div>', `<div id="root">${reactApp}</div>`);
   return reactHtml;
 };
 
 // For local testing
 if (port) {
   app.listen(port, () => {
-    console.log(`App started: http://localhost:${port}/${stage}/home`);
+    console.log(`App started: http://localhost:${port}${basePath}home`);
   });
 }
 
