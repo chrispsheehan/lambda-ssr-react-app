@@ -40,10 +40,7 @@ static-sync bucket cloudfront_id:
 
 check:
     #!/usr/bin/env bash
-    cd {{justfile_directory()}}/tf/cdn
-    terraform init
-    terraform validate
-    cd {{justfile_directory()}}/tf/ssr
+    cd {{justfile_directory()}}/tf
     terraform init
     terraform validate
 
