@@ -58,7 +58,7 @@ jobs:
           echo "CLOUDFRONT_ID=$CLOUDFRONT_ID" >> $GITHUB_OUTPUT
       - name: sync static files
         shell: bash
-        run: just static-sync $STATIC_FILES_BUCKET $CLOUDFRONT_ID
+        run: just static-sync ${{ steps.set_vars.outputs.STATIC_FILES_BUCKET }} ${{ steps.set_vars.outputs.CLOUDFRONT_ID }}
 
   test:
     needs:
