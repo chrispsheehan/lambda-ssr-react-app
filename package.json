@@ -26,7 +26,7 @@
     "clean": "rm -rf ./dist && rm -rf ./public",
     "build": "webpack --config webpack.config.cjs",
     "build:dev": "dotenv -e .env -- webpack --watch --stats-error-details",
-    "start:dev": "dotenv -e .env -- concurrently \"npm run build:dev\" \"nodemon --watch ./dist --exec 'node ./dist/server.cjs'\"",
+    "start:dev": "npm i && npm run build && dotenv -e .env -- concurrently \"npm run build:dev\" \"nodemon --watch ./dist --exec 'node ./dist/server.cjs'\"",
     "test": "npx playwright test"
   },
   "devDependencies": {
