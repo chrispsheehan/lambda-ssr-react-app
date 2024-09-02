@@ -1,4 +1,5 @@
 locals {
-  ssr_reference = "${var.environment}-${var.base_reference}-app"
-  static_reference = "${var.environment}-${var.base_reference}-static"
+  reference     = "${var.environment}-${var.base_reference}"
+  ssr_origin    = "${local.reference}-app"
+  static_origin = "${local.reference}-static"
 }

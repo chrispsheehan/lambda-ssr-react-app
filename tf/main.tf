@@ -1,5 +1,5 @@
 resource "aws_s3_bucket" "static_files" {
-  bucket        = "${local.static_reference}-files"
+  bucket        = "${local.static_origin}-files"
   force_destroy = true
 }
 
@@ -28,8 +28,8 @@ resource "aws_s3_bucket_policy" "static_files_policy" {
 }
 
 resource "aws_cloudfront_origin_access_control" "oac" {
-  name                              = "oac-${local.static_reference}"
-  description                       = "OAC Policy for ${local.static_reference}"
+  name                              = "oac-${local.reference}"
+  description                       = "OAC Policy for ${local.reference}"
   origin_access_control_origin_type = "s3"
   signing_behavior                  = "always"
   signing_protocol                  = "sigv4"
@@ -37,12 +37,31 @@ resource "aws_cloudfront_origin_access_control" "oac" {
 
 resource "aws_cloudfront_distribution" "distribution" {
 
-  comment = "${local.static_reference}-cdn"
+  comment = "${local.reference}-distribution"
 
   origin {
-    domain_name              = aws_s3_bucket.static_files.bucket_regional_domain_name
+    domain_name              = local.static_origin
     origin_id                = aws_s3_bucket.static_files.bucket_regional_domain_name
     origin_access_control_id = aws_cloudfront_origin_access_control.oac.id
+  }
+
+  origin {
+    domain_name = replace(
+      replace(aws_apigatewayv2_stage.this.invoke_url, "https://", ""),
+      "/${aws_apigatewayv2_stage.this.name}",
+      ""
+    )
+    origin_id   = local.ssr_origin
+    origin_path = "/${aws_apigatewayv2_stage.this.name}"
+
+    custom_origin_config {
+      http_port                = 80
+      https_port               = 443
+      origin_protocol_policy   = "https-only"
+      origin_ssl_protocols     = ["TLSv1.2"]
+      origin_keepalive_timeout = 5
+      origin_read_timeout      = 30
+    }
   }
 
   enabled         = true
@@ -51,7 +70,7 @@ resource "aws_cloudfront_distribution" "distribution" {
   default_cache_behavior {
     allowed_methods  = ["GET", "HEAD"]
     cached_methods   = ["GET", "HEAD"]
-    target_origin_id = aws_s3_bucket.static_files.bucket_regional_domain_name
+    target_origin_id = local.ssr_origin
 
     forwarded_values {
       query_string = false
@@ -64,6 +83,27 @@ resource "aws_cloudfront_distribution" "distribution" {
     min_ttl                = 0
     default_ttl            = 3600
     max_ttl                = 86400
+  }
+
+  ordered_cache_behavior {
+    path_pattern           = "/public/*"
+    target_origin_id       = local.static_origin
+    viewer_protocol_policy = "redirect-to-https"
+
+    allowed_methods = ["GET", "HEAD", "OPTIONS"]
+    cached_methods  = ["GET", "HEAD"]
+
+    forwarded_values {
+      query_string = true
+      cookies {
+        forward = "none"
+      }
+    }
+
+    min_ttl     = 0
+    default_ttl = 3600
+    max_ttl     = 86400
+    compress    = true
   }
 
   price_class = "PriceClass_100"
@@ -80,7 +120,7 @@ resource "aws_cloudfront_distribution" "distribution" {
 }
 
 resource "aws_s3_bucket" "ssr_code_bucket" {
-  bucket = "${local.ssr_reference}-ssr-code"
+  bucket = "${local.ssr_origin}-code"
 }
 
 resource "aws_s3_object" "ssr_code_zip" {
@@ -91,7 +131,7 @@ resource "aws_s3_object" "ssr_code_zip" {
 }
 
 resource "aws_lambda_function" "render" {
-  function_name = local.ssr_reference
+  function_name = local.ssr_origin
   handler       = "dist/server.handler"
   runtime       = "nodejs20.x"
   role          = aws_iam_role.lambda_execution_role.arn
@@ -105,32 +145,31 @@ resource "aws_lambda_function" "render" {
   environment {
     variables = {
       APP_ENV       = "production",
-      STAGE         = var.environment,
-      STATIC_SOURCE = var.static_files_source
+      PUBLIC_PATH   = "/public",
+      BASE_PATH     = "/",
+      STATIC_SOURCE = "NOT_USED"
     }
   }
 }
 
 resource "aws_iam_role" "lambda_execution_role" {
-  name               = "${local.ssr_reference}-lambda-execution-role"
+  name               = "${local.ssr_origin}-lambda-execution-role"
   assume_role_policy = data.aws_iam_policy_document.api_lambda_assume_role.json
 }
 
 resource "aws_lambda_permission" "this" {
-  statement_id  = "${local.ssr_reference}-allow-api-gateway-invoke"
+  statement_id  = "${local.ssr_origin}-allow-api-gateway-invoke"
   action        = "lambda:InvokeFunction"
   function_name = aws_lambda_function.render.function_name
   principal     = "apigateway.amazonaws.com"
 }
 
 resource "aws_apigatewayv2_api" "this" {
-  name          = local.ssr_reference
+  name          = local.ssr_origin
   protocol_type = "HTTP"
 }
 
 resource "aws_apigatewayv2_stage" "this" {
-  count = 1 # Force recreation every time
-
   api_id      = aws_apigatewayv2_api.this.id
   name        = var.environment
   auto_deploy = true
@@ -138,10 +177,6 @@ resource "aws_apigatewayv2_stage" "this" {
   default_route_settings {
     throttling_burst_limit = 10
     throttling_rate_limit  = 5
-  }
-
-  lifecycle {
-    create_before_destroy = true
   }
 }
 
@@ -163,4 +198,3 @@ resource "aws_apigatewayv2_route" "default_route" {
   route_key = "$default"
   target    = "integrations/${aws_apigatewayv2_integration.this.id}"
 }
-
