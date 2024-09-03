@@ -19,13 +19,13 @@ Cloudfront is used to host the initial index.html as well as other static assets
 
 `PORT`: Port to expose app on localhost. Used locally only.
 
-`STAGE`: Base path of app. Must match api gateway stage in AWS.
-
 `APP_ENV`: `production` | `local` | `docker` are supported.
 
-`STATIC_SOURCE`: Path for static assets. Local file directory or cloudfront domain.
+`STATIC_SOURCE`: Path for static assets. Local file directory - not used in deployed app.
 
-`CLIENT_PUBLIC_PATH`: Path above assets are accessed with on the client side.
+`PUBLIC_PATH`: Path above assets are accessed with on the client side.
+
+`BASE_PATH`: Defined path wear the SSR app is to be accessed from.
 
 ## Run Locally
 
@@ -49,7 +49,7 @@ just debug
 ## Deploy
 
 - Run `Deploy Environment` in Github Actions.
-  - or cd into `tf/cdn` and `tf/ssr` to deploy manually.
+  - or cd into `tf/` to deploy manually.
 
 - Required aws permissions below.
 
@@ -71,17 +71,17 @@ just debug
 ```json
 {
   "httpMethod": "GET",
-  "resource": "/dev/about",
-  "path": "/dev/about",
+  "resource": "/about",
+  "path": "/about",
   "headers": {
     "Content-Type": "application/json"
   },
   "requestContext": {
-    "resourcePath": "/dev/about",
+    "resourcePath": "/about",
     "httpMethod": "GET",
     "requestId": "c6af9ac6-7b61-11e6-9a41-93e8deadbeef",
     "requestTime": "09/Apr/2015:12:34:56 +0000",
-    "path": "/dev/about"
+    "path": "/about"
   }
 }
 ```
