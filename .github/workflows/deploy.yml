@@ -77,6 +77,6 @@ jobs:
       - name: test
         shell: bash
         env:
-          STAGE: ${{ env.TF_VAR_environment }}
+          BASE_PATH: ${{ env.TF_VAR_base_path }}
           BASE_URL: ${{ needs.deploy.outputs.web_url }}
         run: npx playwright test
