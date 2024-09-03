@@ -1,27 +1,15 @@
 _default:
     just --list
 
-_build_file:
-    #!/usr/bin/env bash
-    mkdir -p {{justfile_directory()}}/build
-    echo {{justfile_directory()}}/build/$(date +%s)-build.zip
-
-_base_reference:
-    #!/usr/bin/env bash
-    echo chrispsheehan-lambda-ssr-react
-
-_environment:
-    #!/usr/bin/env bash
-    echo dev
-
-build build_file_path:
+build build_file_path auth_build_file_path:
     #!/usr/bin/env bash
     rm -f {{build_file_path}}
+    rm -f {{auth_build_file_path}}
     npm i
     npm run build
-    rm -rf {{justfile_directory()}}/node_modules
-    npm i --omit=dev
-    zip -r {{build_file_path}} dist node_modules > /dev/null
+    npm run install-deps:ci
+    zip -r {{build_file_path}} app/dist app/node_modules > /dev/null
+    zip -r {{auth_build_file_path}} auth/dist auth/node_modules > /dev/null
 
 run:
     #!/usr/bin/env bash
