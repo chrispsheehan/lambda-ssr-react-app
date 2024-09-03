@@ -132,7 +132,7 @@ resource "aws_s3_object" "ssr_code_zip" {
 
 resource "aws_lambda_function" "render" {
   function_name = local.ssr_origin
-  handler       = "dist/server.handler"
+  handler       = "app/dist/server.handler"
   runtime       = "nodejs20.x"
   role          = aws_iam_role.lambda_execution_role.arn
 
