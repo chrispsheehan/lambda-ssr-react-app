@@ -145,8 +145,8 @@ resource "aws_lambda_function" "render" {
   environment {
     variables = {
       APP_ENV       = "production",
-      PUBLIC_PATH   = "/public",
-      BASE_PATH     = "/",
+      PUBLIC_PATH   = var.public_path,
+      BASE_PATH     = var.base_path,
       STATIC_SOURCE = "NOT_USED"
     }
   }

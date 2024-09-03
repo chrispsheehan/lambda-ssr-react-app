@@ -1,4 +1,4 @@
-name: Deploy Environment
+name: Deploy
 
 on:
   workflow_dispatch:
@@ -11,6 +11,8 @@ env:
   TF_VAR_region: ${{ vars.AWS_REGION }}
   TF_VAR_environment: dev
   TF_VAR_base_reference: chrispsheehan-lambda-ssr-react
+  TF_VAR_base_path: "/"
+  TF_VAR_public_path: "/public"
 
 jobs:
   deploy:
@@ -29,7 +31,8 @@ jobs:
         id: build_app
         shell: bash
         env:
-          PUBLIC_PATH: "/public"
+          PUBLIC_PATH: ${{ env.TF_VAR_public_path }}
+          BASE_PATH: ${{ env.TF_VAR_base_path }}
           SHORT_SHA: $(echo $GITHUB_SHA | cut -c 1-6)
         run: |
           LAMBDA_BUILD_FILE_PATH=${GITHUB_WORKSPACE}/${{ env.SHORT_SHA }}.zip

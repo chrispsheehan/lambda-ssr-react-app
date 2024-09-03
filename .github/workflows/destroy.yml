@@ -1,4 +1,4 @@
-name: Destroy Environment
+name: Destroy
 
 on:
   workflow_dispatch:
@@ -11,6 +11,8 @@ env:
   TF_VAR_region: ${{ vars.AWS_REGION }}
   TF_VAR_environment: dev
   TF_VAR_base_reference: chrispsheehan-lambda-ssr-react
+  TF_VAR_base_path: "/"
+  TF_VAR_public_path: "/public"
 
 jobs:
   destroy:
