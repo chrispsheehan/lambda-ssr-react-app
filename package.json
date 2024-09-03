@@ -6,7 +6,6 @@
     "build": "webpack --config webpack.config.cjs",
     "build:dev": "dotenv -e .env -- webpack --watch --stats-error-details",
     "install-deps": "npm i && npm i --prefix app && npm i --prefix auth",
-    "install-deps:ci": "npm i --omit=dev && npm i --omit=dev --prefix app && npm i --omit=dev --prefix auth",
     "start:dev": "npm run install-deps && dotenv -e .env -- concurrently \"npm run build:dev\" \"nodemon --watch ./dist --exec 'node ./dist/server.cjs'\"",
     "test": "npx playwright test"
   },

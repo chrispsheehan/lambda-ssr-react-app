@@ -3,11 +3,12 @@ _default:
 
 build build_file_path auth_build_file_path:
     #!/usr/bin/env bash
+    set -euo pipefail
+
     rm -f {{build_file_path}}
     rm -f {{auth_build_file_path}}
-    npm i
+    npm run install-deps
     npm run build
-    npm run install-deps:ci
     zip -r {{build_file_path}} app/dist app/node_modules > /dev/null
     zip -r {{auth_build_file_path}} auth/dist auth/node_modules > /dev/null
 
