@@ -54,17 +54,3 @@ plan:
     cd tf
     terraform init
     terraform plan -var lambda_zip_path=/a.zip
-
-local-deploy:
-    #!/usr/bin/env bash
-    build_path="{{justfile_directory()}}/build.zip"
-    rm -f $build_path
-    just build $build_path
-    cd tf
-    terraform init
-    terraform apply -var lambda_zip_path=$build_path
-    STATIC_FILES_BUCKET=$(terraform output -raw static_files_bucket)
-    CLOUDFRONT_ID=$(terraform output -raw cloudfront_id)
-    WEB_URL=$(terraform output -raw web_url)
-    just static-sync $STATIC_FILES_BUCKET $CLOUDFRONT_ID
-    echo $WEB_URL
