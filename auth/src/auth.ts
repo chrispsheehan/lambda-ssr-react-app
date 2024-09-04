@@ -4,8 +4,11 @@ import { APIGatewayAuthorizerResult, PolicyDocument, StatementEffect, APIGateway
  * A simple token-based authorizer function for AWS API Gateway.
  */
 export const handler = async (event: APIGatewayRequestAuthorizerEvent): Promise<APIGatewayAuthorizerResult> => {
+    console.log("Event received:", JSON.stringify(event, null, 2));
     const token = event.headers?.Authorization || event.headers?.authorization;
+    console.log("Authorization token:", token);
     const expectedToken = process.env.API_KEY;
+    console.log("Expected token:", expectedToken);
     const cloudfrontArn = process.env.CLOUDFRONT_ARN || "";
 
     // Validate the incoming token
