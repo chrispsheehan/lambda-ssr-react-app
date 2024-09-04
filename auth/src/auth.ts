@@ -5,7 +5,7 @@ import { APIGatewayTokenAuthorizerEvent, APIGatewayAuthorizerResult, PolicyDocum
  */
 export const handler = async (event: APIGatewayTokenAuthorizerEvent): Promise<APIGatewayAuthorizerResult> => {
     const token = event.authorizationToken;
-    const expectedToken = process.env.API_KEY;
+    const expectedToken = process.env.API_KEY ;
     const cloudfrontArn = process.env.CLOUDFRONT_ARN || ""
 
     // Validate the incoming token
