@@ -246,6 +246,13 @@ resource "aws_lambda_function" "auth" {
   }
 }
 
+resource "aws_lambda_permission" "api_gateway_invoke" {
+  statement_id  = "${local.ssr_origin}-auth-allow-api-gateway-invoke"
+  action        = "lambda:InvokeFunction"
+  function_name = aws_lambda_function.auth.function_name
+  principal     = "apigateway.amazonaws.com"
+}
+
 resource "aws_iam_role" "lambda_execution_role" {
   name               = "${local.ssr_origin}-lambda-execution-role"
   assume_role_policy = data.aws_iam_policy_document.api_lambda_assume_role.json
