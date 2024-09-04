@@ -39,3 +39,23 @@ data "aws_iam_policy_document" "lambda_ssm_policy" {
     resources = [aws_ssm_parameter.api_key_ssm.arn]
   }
 }
+
+data "aws_iam_policy_document" "website_logs_policy" {
+  version = "2012-10-17"
+
+  statement {
+    actions   = ["s3:GetObject"]
+    resources = ["${aws_s3_bucket.website_logs.arn}/*"]
+
+    principals {
+      type        = "Service"
+      identifiers = ["cloudfront.amazonaws.com"]
+    }
+
+    condition {
+      test     = "StringLike"
+      variable = "AWS:SourceArn"
+      values   = ["${aws_cloudfront_distribution.distribution.arn}"]
+    }
+  }
+}

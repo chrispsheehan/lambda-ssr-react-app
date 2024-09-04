@@ -35,9 +35,44 @@ resource "aws_cloudfront_origin_access_control" "oac" {
   signing_protocol                  = "sigv4"
 }
 
+resource "aws_s3_bucket" "website_logs" {
+  bucket        = "${local.ssr_origin}-logs"
+  force_destroy = true
+}
+
+resource "aws_s3_bucket_lifecycle_configuration" "website_logs" {
+  depends_on = [aws_s3_bucket.website_logs]
+  bucket     = aws_s3_bucket.website_logs.id
+  rule {
+    status = "Enabled"
+    id     = "expire_all_files"
+    expiration {
+      days = 14
+    }
+  }
+}
+
+resource "aws_s3_bucket_ownership_controls" "website_logs" {
+  bucket = aws_s3_bucket.website_logs.id
+
+  rule {
+    object_ownership = "BucketOwnerPreferred"
+  }
+}
+
+resource "aws_s3_bucket_policy" "website_logs_policy" {
+  bucket = aws_s3_bucket.website_logs.id
+  policy = data.aws_iam_policy_document.website_logs_policy.json
+}
+
 resource "aws_cloudfront_distribution" "distribution" {
 
   comment = "${local.reference}-distribution"
+
+  logging_config {
+    include_cookies = true
+    bucket          = aws_s3_bucket.website_logs.bucket_regional_domain_name
+  }
 
   origin {
     domain_name              = aws_s3_bucket.static_files.bucket_regional_domain_name
