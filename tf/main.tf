@@ -183,7 +183,7 @@ resource "aws_ssm_parameter" "api_key_ssm" {
 resource "aws_iam_role" "lambda_exec_role" {
   name = "${local.auth_reference}-role"
 
-  assume_role_policy = data.aws_iam_policy_document.api_lambda_assume_role
+  assume_role_policy = data.aws_iam_policy_document.api_lambda_assume_role.json
   
   inline_policy {
     name   = "${local.auth_reference}-policy"
