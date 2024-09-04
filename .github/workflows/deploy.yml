@@ -50,7 +50,7 @@ jobs:
         shell: bash
         env:
           TF_VAR_lambda_zip_path: ${{ steps.build_app.outputs.LAMBDA_BUILD_FILE_PATH }}
-          TF_VAR_auth_zip_path: ${{ steps.build_app.outputs.AUTH_BUILD_FILE_PATH }}
+          TF_VAR_auth_lambda_zip_path: ${{ steps.build_app.outputs.AUTH_BUILD_FILE_PATH }}
         run: |
           cd tf
           terraform apply -auto-approve
