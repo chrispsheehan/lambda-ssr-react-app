@@ -1,10 +1,10 @@
-import { APIGatewayTokenAuthorizerEvent, APIGatewayAuthorizerResult, PolicyDocument, StatementEffect } from 'aws-lambda';
+import { APIGatewayAuthorizerResult, PolicyDocument, StatementEffect, APIGatewayRequestAuthorizerEvent } from 'aws-lambda';
 
 /**
  * A simple token-based authorizer function for AWS API Gateway.
  */
-export const handler = async (event: APIGatewayTokenAuthorizerEvent): Promise<APIGatewayAuthorizerResult> => {
-    const token = event.authorizationToken;
+export const handler = async (event: APIGatewayRequestAuthorizerEvent): Promise<APIGatewayAuthorizerResult> => {
+    const token = event.headers?.Authorization || event.headers?.authorization;;
     const expectedToken = process.env.API_KEY ;
     const cloudfrontArn = process.env.CLOUDFRONT_ARN || ""
 
