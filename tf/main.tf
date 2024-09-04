@@ -184,7 +184,7 @@ resource "aws_iam_role" "lambda_exec_role" {
   name = "${local.auth_reference}-role"
 
   assume_role_policy = data.aws_iam_policy_document.api_lambda_assume_role.json
-  
+
   inline_policy {
     name   = "${local.auth_reference}-policy"
     policy = data.aws_iam_policy_document.lambda_ssm_policy.json
@@ -240,13 +240,14 @@ resource "aws_apigatewayv2_stage" "this" {
 }
 
 resource "aws_apigatewayv2_authorizer" "this" {
-  api_id = aws_apigatewayv2_api.this.id
+  api_id          = aws_apigatewayv2_api.this.id
   authorizer_type = "REQUEST"
   authorizer_uri  = aws_lambda_function.auth.invoke_arn
 
   identity_sources = ["$request.header.Authorization"]
 
-  name = local.auth_reference
+  name                              = local.auth_reference
+  authorizer_payload_format_version = "2.0"
 }
 
 resource "aws_apigatewayv2_integration" "this" {
