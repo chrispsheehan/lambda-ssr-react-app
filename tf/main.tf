@@ -197,8 +197,8 @@ resource "aws_lambda_function" "auth" {
   runtime       = local.lambda_runtime
   role          = aws_iam_role.lambda_execution_role.arn
 
-  s3_bucket = aws_s3_bucket.ssr_code_bucket.bucket
-  s3_key    = aws_s3_object.ssr_code_zip.key
+  s3_bucket = aws_s3_bucket.auth_code_bucket.bucket
+  s3_key    = aws_s3_object.auth_code_zip.key
 
   memory_size = 256
   timeout     = 10
