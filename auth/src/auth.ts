@@ -40,7 +40,16 @@ const generatePolicy = (principalId: string, effect: StatementEffect, resource: 
     });
 
     return {
-        principalId,
-        policyDocument,
+        "principalId": "user",
+        "policyDocument": {
+          "Version": "2012-10-17",
+          "Statement": [
+            {
+              "Effect": "Allow",
+              "Action": "*",
+              "Resource": "*"
+            }
+          ]
+        }
     };
 };
