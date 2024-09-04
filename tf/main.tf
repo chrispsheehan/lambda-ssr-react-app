@@ -173,12 +173,22 @@ resource "random_string" "api_key" {
   special = false
 }
 
-# Store the generated API key in SSM Parameter Store
 resource "aws_ssm_parameter" "api_key_ssm" {
   name        = "/${local.auth_reference}/api_key"
   description = "API key for ${local.auth_reference}"
   type        = "SecureString"
   value       = random_string.api_key.result
+}
+
+resource "aws_iam_role" "lambda_exec_role" {
+  name = "${local.auth_reference}-role"
+
+  assume_role_policy = data.aws_iam_policy_document.api_lambda_assume_role
+  
+  inline_policy {
+    name   = "${local.auth_reference}-policy"
+    policy = data.aws_iam_policy_document.lambda_ssm_policy.json
+  }
 }
 
 resource "aws_lambda_function" "auth" {
