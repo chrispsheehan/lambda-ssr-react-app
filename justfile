@@ -42,4 +42,4 @@ plan:
     #!/usr/bin/env bash
     cd tf
     terraform init
-    terraform plan -var lambda_zip_path=/a.zip
+    terraform plan -var lambda_zip_path=/a.zip -var auth_lambda_zip_path=/a.zip

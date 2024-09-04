@@ -62,6 +62,11 @@ resource "aws_cloudfront_distribution" "distribution" {
       origin_keepalive_timeout = 5
       origin_read_timeout      = 30
     }
+
+    custom_header {
+      name  = "Authorization"
+      value = aws_ssm_parameter.api_key_ssm.value
+    }
   }
 
   enabled         = true
@@ -133,7 +138,7 @@ resource "aws_s3_object" "ssr_code_zip" {
 resource "aws_lambda_function" "render" {
   function_name = local.ssr_origin
   handler       = "app/dist/server.handler"
-  runtime       = "nodejs20.x"
+  runtime       = local.lambda_runtime
   role          = aws_iam_role.lambda_execution_role.arn
 
   s3_bucket = aws_s3_bucket.ssr_code_bucket.bucket
@@ -148,6 +153,49 @@ resource "aws_lambda_function" "render" {
       PUBLIC_PATH   = var.public_path,
       BASE_PATH     = var.base_path,
       STATIC_SOURCE = "NOT_USED"
+    }
+  }
+}
+
+resource "aws_s3_bucket" "auth_code_bucket" {
+  bucket = local.auth_reference
+}
+
+resource "aws_s3_object" "auth_code_zip" {
+  bucket        = aws_s3_bucket.auth_code_bucket.id
+  key           = basename(var.auth_lambda_zip_path)
+  source        = var.auth_lambda_zip_path
+  force_destroy = true
+}
+
+resource "random_string" "api_key" {
+  length  = 32
+  special = false
+}
+
+# Store the generated API key in SSM Parameter Store
+resource "aws_ssm_parameter" "api_key_ssm" {
+  name        = "/${local.auth_reference}/api_key"
+  description = "API key for ${local.auth_reference}"
+  type        = "SecureString"
+  value       = random_string.api_key.result
+}
+
+resource "aws_lambda_function" "auth" {
+  function_name = local.auth_reference
+  handler       = "auth/dist/auth.handler"
+  runtime       = local.lambda_runtime
+  role          = aws_iam_role.lambda_execution_role.arn
+
+  s3_bucket = aws_s3_bucket.ssr_code_bucket.bucket
+  s3_key    = aws_s3_object.ssr_code_zip.key
+
+  memory_size = 256
+  timeout     = 10
+
+  environment {
+    variables = {
+      API_KEY = aws_ssm_parameter.api_key_ssm.value
     }
   }
 }

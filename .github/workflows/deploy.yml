@@ -48,9 +48,12 @@ jobs:
           terraform init
       - name: deploy
         shell: bash
+        env:
+          TF_VAR_lambda_zip_path: ${{ steps.build_app.outputs.LAMBDA_BUILD_FILE_PATH }}
+          TF_VAR_auth_zip_path: ${{ steps.build_app.outputs.AUTH_BUILD_FILE_PATH }}
         run: |
           cd tf
-          terraform apply -auto-approve -var lambda_zip_path=${{ steps.build_app.outputs.LAMBDA_BUILD_FILE_PATH }}
+          terraform apply -auto-approve
       - name: set vars
         id: set_vars
         shell: bash
