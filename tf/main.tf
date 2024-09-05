@@ -230,7 +230,14 @@ resource "aws_iam_role_policy_attachment" "auth" {
   policy_arn = aws_iam_policy.lambda_policy.arn
 }
 
+resource "aws_cloudwatch_log_group" "lambda_auth_log_group" {
+  name              = "/aws/lambda/${aws_lambda_function.auth.function_name}"
+  retention_in_days = 1
+}
+
 resource "aws_lambda_function" "auth" {
+  depends_on    = [ aws_cloudwatch_log_group.lambda_auth_log_group ]
+
   function_name = local.auth_reference
   handler       = "auth/dist/auth.handler"
   runtime       = local.lambda_runtime
