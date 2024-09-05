@@ -240,7 +240,8 @@ resource "aws_lambda_function" "auth" {
 
   environment {
     variables = {
-      API_KEY = aws_ssm_parameter.api_key_ssm.value
+      API_KEY              = aws_ssm_parameter.api_key_ssm.value
+      API_GATEWAY_RESOURCE = "${aws_apigatewayv2_stage.this.arn}/GET/*"
     }
   }
 }

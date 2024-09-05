@@ -6,12 +6,13 @@ import { APIGatewayAuthorizerResult, PolicyDocument, StatementEffect, APIGateway
 export const handler = async (event: APIGatewayRequestAuthorizerEvent): Promise<APIGatewayAuthorizerResult> => {
     const token = event.headers?.Authorization || event.headers?.authorization;
     const expectedToken = process.env.API_KEY;
+    const apiGatewayResource = process.env.API_GATEWAY_RESOURCE || "";
 
     // Validate the incoming token
     if (token === expectedToken) {
-        return generatePolicy('user', 'Allow', event.methodArn);
+        return generatePolicy('user', 'Allow', apiGatewayResource);
     } else {
-        return generatePolicy('user', 'Deny', event.methodArn);
+        return generatePolicy('user', 'Deny', apiGatewayResource);
     }
 };
 
@@ -25,7 +26,7 @@ const generatePolicy = (principalId: string, effect: StatementEffect, resource: 
             {
                 Effect: effect,
                 Action: 'execute-api:Invoke',
-                Resource: "*"
+                Resource: resource
             },
         ],
     };
