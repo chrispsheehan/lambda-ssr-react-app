@@ -36,7 +36,16 @@ data "aws_iam_policy_document" "static_files_policy" {
 data "aws_iam_policy_document" "lambda_ssm_policy" {
   statement {
     actions   = ["ssm:GetParameter"]
-    resources = [aws_ssm_parameter.api_key_ssm.arn]
+    resources = [aws_ssm_parameter.api_key_ssm.arn] /// create separate one for auth + render
+  }
+
+  statement {
+    actions = [
+      "logs:CreateLogGroup",
+      "logs:CreateLogStream",
+      "logs:PutLogEvents"
+    ]
+    resources = ["arn:aws:logs:*:*:*"]
   }
 }
 

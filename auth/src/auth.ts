@@ -1,35 +1,41 @@
-import { APIGatewayAuthorizerResult, PolicyDocument, StatementEffect, APIGatewayRequestAuthorizerEvent } from 'aws-lambda';
+import { APIGatewayRequestAuthorizerEvent, APIGatewayAuthorizerResult, PolicyDocument, StatementEffect } from 'aws-lambda';
 
-/**
- * A simple token-based authorizer function for AWS API Gateway.
- */
 export const handler = async (event: APIGatewayRequestAuthorizerEvent): Promise<APIGatewayAuthorizerResult> => {
-    const token = event.headers?.Authorization || event.headers?.authorization;
-    const expectedToken = process.env.API_KEY;
-    const apiGatewayResource = process.env.API_GATEWAY_RESOURCE || "";
+    console.log('Received event:', JSON.stringify(event, null, 2)); // Log the entire event
+
+    const authorizationToken = event.headers?.Authorization || '';
+    const expectedToken = process.env.API_KEY || '';
+    const apiGatewayResource = process.env.API_GATEWAY_RESOURCE || '';
+
+    // Log the received token and expected token
+    console.log('Authorization token received:', authorizationToken);
+    console.log('Expected token:', expectedToken);
+    console.log('API Gateway Resource:', apiGatewayResource); // Log the API Gateway resource being accessed
 
     // Validate the incoming token
-    if (token === expectedToken) {
+    if (authorizationToken === expectedToken) {
+        console.log('Authorization successful. Generating Allow policy.');
         return generatePolicy('user', 'Allow', apiGatewayResource);
     } else {
+        console.log('Authorization failed. Generating Deny policy.');
         return generatePolicy('user', 'Deny', apiGatewayResource);
     }
 };
 
-/**
- * Generates a policy document to allow or deny access to the API Gateway.
- */
+// Helper function to generate an IAM policy
 const generatePolicy = (principalId: string, effect: StatementEffect, resource: string): APIGatewayAuthorizerResult => {
     const policyDocument: PolicyDocument = {
-        Version: '2012-10-17',
+        Version: "2012-10-17",
         Statement: [
             {
+                Action: "execute-api:Invoke",
                 Effect: effect,
-                Action: 'execute-api:Invoke',
-                Resource: resource
+                Resource: resource,
             },
         ],
     };
+
+    console.log('Generated policy:', JSON.stringify(policyDocument, null, 2)); // Log the generated policy
 
     return {
         principalId,
