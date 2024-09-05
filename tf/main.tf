@@ -231,7 +231,7 @@ resource "aws_iam_role_policy_attachment" "auth" {
 }
 
 resource "aws_cloudwatch_log_group" "lambda_auth_log_group" {
-  name              = "/aws/lambda/${aws_lambda_function.auth.function_name}"
+  name              = "/aws/lambda/${local.auth_reference}"
   retention_in_days = 1
 }
 
