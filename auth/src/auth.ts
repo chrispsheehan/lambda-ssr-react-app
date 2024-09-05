@@ -25,7 +25,7 @@ const generatePolicy = (principalId: string, effect: StatementEffect, resource: 
             {
                 Effect: effect,
                 Action: 'execute-api:Invoke',
-                Resource: resource,
+                Resource: "*"
             },
         ],
     };
