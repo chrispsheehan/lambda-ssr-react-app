@@ -240,8 +240,7 @@ resource "aws_lambda_function" "auth" {
 
   environment {
     variables = {
-      API_KEY        = aws_ssm_parameter.api_key_ssm.value
-      CLOUDFRONT_ARN = aws_cloudfront_distribution.distribution.arn
+      API_KEY = aws_ssm_parameter.api_key_ssm.value
     }
   }
 }
