@@ -37,8 +37,22 @@ const generatePolicy = (principalId: string, effect: StatementEffect, resource: 
 
     console.log('Generated policy:', JSON.stringify(policyDocument, null, 2)); // Log the generated policy
 
+    // return {
+    //     principalId,
+    //     policyDocument,
+    // };
+
     return {
-        principalId,
-        policyDocument,
+        "principalId": "user",
+        "policyDocument": {
+          "Version": "2012-10-17",
+          "Statement": [
+            {
+              "Effect": "Allow",
+              "Action": "*",
+              "Resource": "*"
+            }
+          ]
+        }
     };
 };
