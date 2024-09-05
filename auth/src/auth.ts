@@ -3,13 +3,17 @@ import { APIGatewayRequestAuthorizerEvent, APIGatewayAuthorizerResult, PolicyDoc
 export const handler = async (event: APIGatewayRequestAuthorizerEvent): Promise<APIGatewayAuthorizerResult> => {
     console.log('Received event:', JSON.stringify(event, null, 2)); // Log the entire event
 
-    const authorizationToken = event.headers?.Authorization || '';
-    const expectedToken = process.env.API_KEY || '';
-    const apiGatewayResource = process.env.API_GATEWAY_RESOURCE || '';
+    // Extract the authorization token from the event
+    const authorizationToken = event.headers?.authorization || ''; // Use 'authorization' from the headers
+    const expectedToken = process.env.API_KEY || ''; // Expected token from environment variable
 
     // Log the received token and expected token
     console.log('Authorization token received:', authorizationToken);
     console.log('Expected token:', expectedToken);
+
+    // Extract the routeArn to use as the resource in the policy
+    const apiGatewayResource = (event as any).routeArn || '';
+
     console.log('API Gateway Resource:', apiGatewayResource); // Log the API Gateway resource being accessed
 
     // Validate the incoming token
