@@ -217,13 +217,17 @@ resource "aws_ssm_parameter" "api_key_ssm" {
 
 resource "aws_iam_role" "lambda_exec_role" {
   name = "${local.auth_reference}-role"
-
   assume_role_policy = data.aws_iam_policy_document.api_lambda_assume_role.json
+}
 
-  inline_policy {
-    name   = "${local.auth_reference}-policy"
-    policy = data.aws_iam_policy_document.lambda_ssm_policy.json
-  }
+resource "aws_iam_policy" "lambda_policy" {
+  name   = "${local.auth_reference}-logging-policy"
+  policy = data.aws_iam_policy_document.lambda_ssm_policy.json
+}
+
+resource "aws_iam_role_policy_attachment" "auth" {
+  role = aws_iam_role.lambda_exec_role.arn
+  policy_arn = aws_iam_policy.lambda_policy.arn
 }
 
 resource "aws_lambda_function" "auth" {
