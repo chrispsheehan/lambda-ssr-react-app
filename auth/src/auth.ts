@@ -7,23 +7,21 @@ export const handler = async (event: APIGatewayRequestAuthorizerEvent): Promise<
         // Extract the authorization token from the event
         const authorizationToken = event.headers?.authorization || ''; // Use 'authorization' from the headers
         const expectedToken = process.env.API_KEY || ''; // Expected token from environment variable
+        const apiResource = process.env.API_RESOURCE || ''
 
         // Log the received token and expected token
         console.log('Authorization token received:', authorizationToken);
         console.log('Expected token:', expectedToken);
 
-        // Extract the routeArn to use as the resource in the policy
-        const apiGatewayResource = (event as any).routeArn || '';
-
-        console.log('API Gateway Resource:', apiGatewayResource); // Log the API Gateway resource being accessed
+        console.log('API Gateway Resource:', apiResource); // Log the API Gateway resource being accessed
 
         // Validate the incoming token
         if (authorizationToken === expectedToken) {
             console.log('Authorization successful. Generating Allow policy.');
-            return generatePolicy('user', 'Allow', apiGatewayResource);
+            return generatePolicy('user', 'Allow', apiResource);
         } else {
             console.log('Authorization failed. Generating Deny policy.');
-            return generatePolicy('user', 'Deny', apiGatewayResource);
+            return generatePolicy('user', 'Deny', apiResource);
         }
     } catch (error) {
         console.error('Error processing the authorization request:', error);
@@ -39,7 +37,7 @@ const generatePolicy = (principalId: string, effect: StatementEffect, resource: 
             {
                 Action: "execute-api:Invoke",
                 Effect: effect,
-                Resource: ["*"],
+                Resource: [resource],
             },
         ],
     };
