@@ -9,3 +9,7 @@ output "cloudfront_id" {
 output "web_url" {
   value = "https://${aws_cloudfront_distribution.distribution.domain_name}"
 }
+
+output "api_url" {
+  value = aws_apigatewayv2_stage.this.invoke_url
+}
