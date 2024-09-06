@@ -39,7 +39,7 @@ const generatePolicy = (principalId: string, effect: StatementEffect, resource: 
             {
                 Action: "execute-api:Invoke",
                 Effect: effect,
-                Resource: resource,
+                Resource: ["*"],
             },
         ],
     };
