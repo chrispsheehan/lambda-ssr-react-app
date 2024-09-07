@@ -35,9 +35,24 @@ data "aws_iam_policy_document" "static_files_policy" {
   }
 }
 
-data "aws_iam_policy_document" "lambda_ssm_policy" {
+data "aws_iam_policy_document" "lambda_apikey_policy" {
   statement {
-    actions   = ["ssm:GetParameter"]
-    resources = [aws_ssm_parameter.api_key_ssm.arn] /// create separate one for auth + render
+    actions   = [
+      "ssm:GetParameter"
+    ]
+    resources = [
+      aws_ssm_parameter.api_key_ssm.arn
+    ]
+  }
+}
+
+data "aws_iam_policy_document" "lambda_logging_policy" {
+  statement {
+    actions   = [
+      "ssm:GetParameter"
+    ]
+    resources = [
+      aws_ssm_parameter.api_key_ssm.arn
+    ]
   }
 }

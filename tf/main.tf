@@ -135,11 +135,16 @@ resource "aws_s3_object" "ssr_code_zip" {
   force_destroy = true
 }
 
+resource "aws_iam_role" "lambda_render_role" {
+  name               = "${local.ssr_origin}-lambda-render-role"
+  assume_role_policy = data.aws_iam_policy_document.api_lambda_assume_role.json
+}
+
 resource "aws_lambda_function" "render" {
   function_name = local.ssr_origin
   handler       = "app/dist/server.handler"
   runtime       = local.lambda_runtime
-  role          = aws_iam_role.lambda_execution_role.arn
+  role          = aws_iam_role.lambda_render_role.arn
 
   s3_bucket = aws_s3_bucket.ssr_code_bucket.bucket
   s3_key    = aws_s3_object.ssr_code_zip.key
@@ -180,26 +185,26 @@ resource "aws_ssm_parameter" "api_key_ssm" {
   value       = random_string.api_key.result
 }
 
-resource "aws_iam_role" "lambda_exec_role" {
-  name = "${local.auth_reference}-role"
+resource "aws_iam_role" "lambda_auth_role" {
+  name               = "${local.ssr_origin}-lambda-auth-role"
   assume_role_policy = data.aws_iam_policy_document.api_lambda_assume_role.json
 }
 
-resource "aws_iam_policy" "lambda_policy" {
-  name   = "${local.auth_reference}-logging-policy"
-  policy = data.aws_iam_policy_document.lambda_ssm_policy.json //check this
+resource "aws_iam_policy" "lambda_apikey_policy" {
+  name   = "${local.auth_reference}-apikey-policy"
+  policy = data.aws_iam_policy_document.lambda_apikey_policy.json 
 }
 
 resource "aws_iam_role_policy_attachment" "auth" {
-  role = aws_iam_role.lambda_exec_role.name
-  policy_arn = aws_iam_policy.lambda_policy.arn
+  role = aws_iam_role.lambda_auth_role.name
+  policy_arn = aws_iam_policy.lambda_apikey_policy.arn
 }
 
 resource "aws_lambda_function" "auth" {
   function_name = local.auth_reference
   handler       = "auth/dist/auth.handler"
   runtime       = local.lambda_runtime
-  role          = aws_iam_role.lambda_execution_role.arn
+  role          = aws_iam_role.lambda_auth_role.arn
 
   s3_bucket = aws_s3_bucket.auth_code_bucket.bucket
   s3_key    = aws_s3_object.auth_code_zip.key
@@ -220,11 +225,6 @@ resource "aws_lambda_permission" "api_gateway_invoke" {
   action        = "lambda:InvokeFunction"
   function_name = aws_lambda_function.auth.function_name
   principal     = "apigateway.amazonaws.com"
-}
-
-resource "aws_iam_role" "lambda_execution_role" {
-  name               = "${local.ssr_origin}-lambda-execution-role"
-  assume_role_policy = data.aws_iam_policy_document.api_lambda_assume_role.json
 }
 
 resource "aws_lambda_permission" "this" {
