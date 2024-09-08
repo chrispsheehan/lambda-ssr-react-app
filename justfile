@@ -1,27 +1,16 @@
 _default:
     just --list
 
-_build_file:
+build build_file_path auth_build_file_path:
     #!/usr/bin/env bash
-    mkdir -p {{justfile_directory()}}/build
-    echo {{justfile_directory()}}/build/$(date +%s)-build.zip
+    set -euo pipefail
 
-_base_reference:
-    #!/usr/bin/env bash
-    echo chrispsheehan-lambda-ssr-react
-
-_environment:
-    #!/usr/bin/env bash
-    echo dev
-
-build build_file_path:
-    #!/usr/bin/env bash
     rm -f {{build_file_path}}
-    npm i
+    rm -f {{auth_build_file_path}}
+    npm run install-deps
     npm run build
-    rm -rf {{justfile_directory()}}/node_modules
-    npm i --omit=dev
-    zip -r {{build_file_path}} dist node_modules > /dev/null
+    zip -r {{build_file_path}} app/dist app/node_modules > /dev/null
+    zip -r {{auth_build_file_path}} auth/dist auth/node_modules > /dev/null
 
 run:
     #!/usr/bin/env bash
@@ -53,4 +42,4 @@ plan:
     #!/usr/bin/env bash
     cd tf
     terraform init
-    terraform plan -var lambda_zip_path=/a.zip
+    terraform plan -var lambda_zip_path=/a.zip -var auth_lambda_zip_path=/a.zip

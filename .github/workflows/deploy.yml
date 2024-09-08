@@ -34,10 +34,13 @@ jobs:
           PUBLIC_PATH: ${{ env.TF_VAR_public_path }}
           BASE_PATH: ${{ env.TF_VAR_base_path }}
           SHORT_SHA: $(echo $GITHUB_SHA | cut -c 1-6)
+          MODE: production
         run: |
-          LAMBDA_BUILD_FILE_PATH=${GITHUB_WORKSPACE}/${{ env.SHORT_SHA }}.zip
-          just build $LAMBDA_BUILD_FILE_PATH
+          LAMBDA_BUILD_FILE_PATH=${GITHUB_WORKSPACE}/${{ env.SHORT_SHA }}-ssr.zip
+          AUTH_BUILD_FILE_PATH=${GITHUB_WORKSPACE}/${{ env.SHORT_SHA }}-auth.zip
+          just build $LAMBDA_BUILD_FILE_PATH $AUTH_BUILD_FILE_PATH
           echo "LAMBDA_BUILD_FILE_PATH=$LAMBDA_BUILD_FILE_PATH" >> $GITHUB_OUTPUT
+          echo "AUTH_BUILD_FILE_PATH=$AUTH_BUILD_FILE_PATH" >> $GITHUB_OUTPUT
       - name: init
         shell: bash
         run: |
@@ -45,9 +48,12 @@ jobs:
           terraform init
       - name: deploy
         shell: bash
+        env:
+          TF_VAR_lambda_zip_path: ${{ steps.build_app.outputs.LAMBDA_BUILD_FILE_PATH }}
+          TF_VAR_auth_lambda_zip_path: ${{ steps.build_app.outputs.AUTH_BUILD_FILE_PATH }}
         run: |
           cd tf
-          terraform apply -auto-approve -var lambda_zip_path=${{ steps.build_app.outputs.LAMBDA_BUILD_FILE_PATH }}
+          terraform apply -auto-approve
       - name: set vars
         id: set_vars
         shell: bash
@@ -74,6 +80,9 @@ jobs:
         run: |
           npm install @playwright/test playwright-chromium
           npx playwright install --with-deps chromium
+      - name: sleep
+        shell: bash
+        run: sleep 300
       - name: test
         shell: bash
         env:

@@ -10,13 +10,16 @@ services:
       start_period: 15s
     container_name: ssr-web
     volumes:
-      - ./src/:/app/src
-      - ./assets:/app/assets
-      - ./package.json:/app/package.json
-      - ./tsconfig.json:/app/tsconfig.json
-      - ./webpack.config.cjs:/app/webpack.config.cjs
-    working_dir: /app
-    command: ["/bin/sh", "-c", "npm install && npm run build && npm run start:dev"]
+      - ./app/src/:/work/app/src
+      - ./app/package.json:/work/app/package.json
+      - ./auth/src/:/work/auth/src
+      - ./auth/package.json:/work/auth/package.json
+      - ./assets:/work/assets
+      - ./package.json:/work/package.json
+      - ./tsconfig.json:/work/tsconfig.json
+      - ./webpack.config.cjs:/work/webpack.config.cjs
+    working_dir: /work
+    command: ["/bin/sh", "-c", "npm run install-deps && npm run build && npm run start:dev"]
     ports:
       - 3001:3001
 

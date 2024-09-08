@@ -13,6 +13,9 @@ const watchOptions = {
   ignored: /node_modules/, // Ignore changes in node_modules
 };
 
+const publicPath = process.env.PUBLIC_PATH;
+const mode = process.env.MODE || "development";
+
 /**
  * Load JS, JSX, TS, and TSX files through Babel and TS Loader
  */
@@ -57,27 +60,25 @@ const resolve = {
 
 const serverConfig = {
   target: 'node',
-  mode: 'development', // change to production for production build
-  entry: './src/server/server.tsx',
+  mode: mode,
+  entry: './app/src/server/server.tsx',
   output: {
-    path: path.join(__dirname, 'dist'),
+    path: path.join(__dirname, 'app/dist'),
     filename: 'server.cjs',
   },
   module: babelLoader,
-  plugins: [
-    // Remove the CopyWebpackPlugin that copies index.html here
-  ],
+  optimization: {
+    minimize: false, // Disable minification
+  },
   ignoreWarnings: [/Critical dependency: the request of a dependency is an expression/],
   resolve,
   watchOptions,
 };
 
-const publicPath = process.env.PUBLIC_PATH; //must have leading slash
-
 const clientConfig = {
   target: 'web',
-  mode: 'development', // change to production for production build
-  entry: './src/client/index.tsx',
+  mode: mode,
+  entry: './app/src/client/index.tsx',
   output: {
     path: path.join(__dirname, 'public/static'),
     publicPath: `${publicPath}/static`, // leading slash for resolves to the correct location regardless of the route
@@ -86,8 +87,8 @@ const clientConfig = {
   module: babelLoader,
   plugins: [
     new HtmlWebpackPlugin({
-      template: `${__dirname}/src/client/index.html`, // use the source HTML file
-      filename: path.join(__dirname, 'dist', 'index.html'), // output to dist folder
+      template: `${__dirname}/app/src/client/index.html`, // use the source HTML file
+      filename: path.join(__dirname, 'app/dist', 'index.html'), // output to dist folder
       inject: 'body', // inject the client.js script at the end of the body tag
     }),
     new webpack.DefinePlugin({
@@ -102,8 +103,32 @@ const clientConfig = {
       ]
     }),
   ],
+  optimization: {
+    minimize: false, // Disable minification
+  },
   resolve,
   watchOptions,
 };
 
-module.exports = [serverConfig, clientConfig];
+const authConfig = {
+  target: 'node',
+  mode: mode,
+  entry: './auth/src/auth.ts',
+  output: {
+    path: path.join(__dirname, 'auth/dist'),
+    filename: 'auth.js',
+    libraryTarget: 'commonjs2',
+  },
+  module: babelLoader,
+  resolve,
+  plugins: [
+    new webpack.DefinePlugin({
+      'process.env.AUTH_SECRET': JSON.stringify(process.env.AUTH_SECRET)
+    })
+  ],
+  optimization: {
+    minimize: false, // Disable minification
+  },
+};
+
+module.exports = [serverConfig, clientConfig, authConfig];

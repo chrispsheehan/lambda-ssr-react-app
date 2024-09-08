@@ -85,3 +85,57 @@ just debug
   }
 }
 ```
+
+```json
+{
+    "version": "2.0",
+    "type": "REQUEST",
+    "routeArn": "arn:aws:execute-api:eu-west-2:700060376888:8lk68m9h25/dev/GET/",
+    "identitySource": [
+        "6OkamVASECRETSugrcTwFhFqF"
+    ],
+    "routeKey": "ANY /{proxy+}",
+    "rawPath": "/dev/",
+    "rawQueryString": "",
+    "headers": {
+        "accept-encoding": "gzip",
+        "authorization": "6OkamVASECRETSugrcTwFhFqF",
+        "content-length": "0",
+        "host": "8lk68m9h25.execute-api.eu-west-2.amazonaws.com",
+        "priority": "u=0, i",
+        "sec-fetch-dest": "document",
+        "sec-fetch-mode": "navigate",
+        "sec-fetch-site": "cross-site",
+        "sec-fetch-user": "?1",
+        "upgrade-insecure-requests": "1",
+        "user-agent": "Amazon CloudFront",
+        "via": "2.0 f9f510ca7ffa469320fb8f68f90942f4.cloudfront.net (CloudFront)",
+        "x-amz-cf-id": "mS5hM3w8X7EJh4ovDkASgQI9QHXEU4MnbZk5McRk52ASKdzocW0MJQ==",
+        "x-amzn-trace-id": "Root=1-66da0774-32c6e5112c547d2c43efbd3d",
+        "x-forwarded-for": "146.198.224.119, 3.172.1.11",
+        "x-forwarded-port": "443",
+        "x-forwarded-proto": "https"
+    },
+    "requestContext": {
+        "accountId": "700060376888",
+        "apiId": "8lk68m9h25",
+        "domainName": "8lk68m9h25.execute-api.eu-west-2.amazonaws.com",
+        "domainPrefix": "8lk68m9h25",
+        "http": {
+            "method": "GET",
+            "path": "/dev/",
+            "protocol": "HTTP/1.1",
+            "sourceIp": "146.198.224.119",
+            "userAgent": "Amazon CloudFront"
+        },
+        "requestId": "dpYaOhEVLPEEMEA=",
+        "routeKey": "ANY /{proxy+}",
+        "stage": "dev",
+        "time": "05/Sep/2024:19:33:08 +0000",
+        "timeEpoch": 1725564788396
+    },
+    "pathParameters": {
+        "proxy": ""
+    }
+}
+```

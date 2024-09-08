@@ -13,6 +13,8 @@ env:
   TF_VAR_base_reference: chrispsheehan-lambda-ssr-react
   TF_VAR_base_path: "/"
   TF_VAR_public_path: "/public"
+  TF_VAR_lambda_zip_path: a.zip
+  TF_VAR_auth_lambda_zip_path: a.zip
 
 jobs:
   destroy:
@@ -36,4 +38,4 @@ jobs:
         shell: bash
         run: |
           cd tf
-          terraform destroy -auto-approve --var lambda_zip_path=/no.zip
+          terraform destroy -auto-approve

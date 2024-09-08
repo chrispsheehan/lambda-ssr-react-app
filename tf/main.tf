@@ -62,6 +62,11 @@ resource "aws_cloudfront_distribution" "distribution" {
       origin_keepalive_timeout = 5
       origin_read_timeout      = 30
     }
+
+    custom_header {
+      name  = "Authorization"
+      value = aws_ssm_parameter.api_key_ssm.value
+    }
   }
 
   enabled         = true
@@ -130,11 +135,16 @@ resource "aws_s3_object" "ssr_code_zip" {
   force_destroy = true
 }
 
+resource "aws_iam_role" "lambda_render_role" {
+  name               = "${local.ssr_origin}-lambda-render-role"
+  assume_role_policy = data.aws_iam_policy_document.api_lambda_assume_role.json
+}
+
 resource "aws_lambda_function" "render" {
   function_name = local.ssr_origin
-  handler       = "dist/server.handler"
-  runtime       = "nodejs20.x"
-  role          = aws_iam_role.lambda_execution_role.arn
+  handler       = "app/dist/server.handler"
+  runtime       = local.lambda_runtime
+  role          = aws_iam_role.lambda_render_role.arn
 
   s3_bucket = aws_s3_bucket.ssr_code_bucket.bucket
   s3_key    = aws_s3_object.ssr_code_zip.key
@@ -152,9 +162,69 @@ resource "aws_lambda_function" "render" {
   }
 }
 
-resource "aws_iam_role" "lambda_execution_role" {
-  name               = "${local.ssr_origin}-lambda-execution-role"
+resource "aws_s3_bucket" "auth_code_bucket" {
+  bucket = local.auth_reference
+}
+
+resource "aws_s3_object" "auth_code_zip" {
+  bucket        = aws_s3_bucket.auth_code_bucket.id
+  key           = basename(var.auth_lambda_zip_path)
+  source        = var.auth_lambda_zip_path
+  force_destroy = true
+}
+
+resource "random_string" "api_key" {
+  length  = 32
+  special = false
+}
+
+resource "aws_ssm_parameter" "api_key_ssm" {
+  name        = "/${local.auth_reference}/api_key"
+  description = "API key for ${local.auth_reference}"
+  type        = "SecureString"
+  value       = random_string.api_key.result
+}
+
+resource "aws_iam_role" "lambda_auth_role" {
+  name               = "${local.ssr_origin}-lambda-auth-role"
   assume_role_policy = data.aws_iam_policy_document.api_lambda_assume_role.json
+}
+
+resource "aws_iam_policy" "lambda_apikey_policy" {
+  name   = "${local.auth_reference}-apikey-policy"
+  policy = data.aws_iam_policy_document.lambda_apikey_policy.json 
+}
+
+resource "aws_iam_role_policy_attachment" "auth" {
+  role = aws_iam_role.lambda_auth_role.name
+  policy_arn = aws_iam_policy.lambda_apikey_policy.arn
+}
+
+resource "aws_lambda_function" "auth" {
+  function_name = local.auth_reference
+  handler       = "auth/dist/auth.handler"
+  runtime       = local.lambda_runtime
+  role          = aws_iam_role.lambda_auth_role.arn
+
+  s3_bucket = aws_s3_bucket.auth_code_bucket.bucket
+  s3_key    = aws_s3_object.auth_code_zip.key
+
+  memory_size = 256
+  timeout     = 10
+
+  environment {
+    variables = {
+      API_KEY      = aws_ssm_parameter.api_key_ssm.value
+      API_RESOURCE = "arn:aws:execute-api:${var.region}:${data.aws_caller_identity.current.account_id}:${aws_apigatewayv2_stage.this.api_id}/${aws_apigatewayv2_stage.this.name}/GET/*"
+    }
+  }
+}
+
+resource "aws_lambda_permission" "api_gateway_invoke" {
+  statement_id  = "${local.ssr_origin}-auth-allow-api-gateway-invoke"
+  action        = "lambda:InvokeFunction"
+  function_name = aws_lambda_function.auth.function_name
+  principal     = "apigateway.amazonaws.com"
 }
 
 resource "aws_lambda_permission" "this" {
@@ -180,6 +250,17 @@ resource "aws_apigatewayv2_stage" "this" {
   }
 }
 
+resource "aws_apigatewayv2_authorizer" "this" {
+  api_id          = aws_apigatewayv2_api.this.id
+  authorizer_type = "REQUEST"
+  authorizer_uri  = aws_lambda_function.auth.invoke_arn
+
+  identity_sources = ["$request.header.Authorization"]
+
+  name                              = local.auth_reference
+  authorizer_payload_format_version = "2.0"
+}
+
 resource "aws_apigatewayv2_integration" "this" {
   api_id             = aws_apigatewayv2_api.this.id
   integration_type   = "AWS_PROXY"
@@ -191,10 +272,16 @@ resource "aws_apigatewayv2_route" "this" {
   api_id    = aws_apigatewayv2_api.this.id
   route_key = "ANY /{proxy+}"
   target    = "integrations/${aws_apigatewayv2_integration.this.id}"
+
+  authorization_type = "CUSTOM"
+  authorizer_id      = aws_apigatewayv2_authorizer.this.id
 }
 
 resource "aws_apigatewayv2_route" "default_route" {
   api_id    = aws_apigatewayv2_api.this.id
   route_key = "$default"
   target    = "integrations/${aws_apigatewayv2_integration.this.id}"
+
+  authorization_type = "CUSTOM"
+  authorizer_id      = aws_apigatewayv2_authorizer.this.id
 }
