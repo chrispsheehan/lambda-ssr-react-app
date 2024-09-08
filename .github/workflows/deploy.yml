@@ -80,6 +80,9 @@ jobs:
         run: |
           npm install @playwright/test playwright-chromium
           npx playwright install --with-deps chromium
+      - name: sleep
+        shell: bash
+        run: sleep 300
       - name: test
         shell: bash
         env:
