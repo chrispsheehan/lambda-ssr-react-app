@@ -214,7 +214,7 @@ resource "aws_lambda_function" "auth" {
 
   environment {
     variables = {
-      API_KEY      = aws_ssm_parameter.api_key_ssm.value
+      API_KEY      = aws_ssm_parameter.api_key_ssm.key_id
       API_RESOURCE = "arn:aws:execute-api:${var.region}:${data.aws_caller_identity.current.account_id}:${aws_apigatewayv2_stage.this.api_id}/${aws_apigatewayv2_stage.this.name}/GET/*"
     }
   }
