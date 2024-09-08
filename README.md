@@ -2,6 +2,8 @@
 
 A ReactJS SSR app hosted in AWS.
 
+![My Image](./docs/aws-flow-chart.png)
+
 ## Overview
 
 Render SSR app on the client side via an AWS Lambda function. Commonly used to increase SEO scores. This approach could also abstract back end API interactions away from the client side - think authentication.
@@ -85,6 +87,8 @@ just debug
   }
 }
 ```
+
+- The below for the auth lambda.
 
 ```json
 {
